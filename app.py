@@ -1,111 +1,41 @@
 import gradio as gr
-import torch
-from diffusers import StableDiffusionInpaintPipeline
 from PIL import Image
 import numpy as np
 
-# Initialize the pipeline
-pipe = StableDiffusionInpaintPipeline.from_pretrained(
-    "stabilityai/stable-diffusion-2-inpainting",
-    torch_dtype=torch.float16,
-)
-
-if torch.cuda.is_available():
-    pipe = pipe.to("cuda")
-
-def inpaint(
-    image,
-    mask,
-    prompt,
-    negative_prompt,
-    num_inference_steps,
-    guidance_scale,
-    seed
-):
-    # Convert mask to black and white
-    if mask is not None:
-        mask = Image.fromarray(mask).convert("L")
-        mask = Image.fromarray(np.array(mask) * 255)
-    
-    # Convert numpy array to PIL Image
-    if isinstance(image, np.ndarray):
-        image = Image.fromarray(image)
-    
-    # Set the random seed for reproducibility
-    if seed is not None:
-        generator = torch.Generator(device="cuda").manual_seed(seed)
+def process_image(init_img_with_mask):
+    image, mask = init_img_with_mask["image"], init_img_with_mask["mask"]
+    mask = create_binary_mask(mask)
+    mask_path = "mask_output.png"
+    mask.save(mask_path)
+    return image
+copy_image_buttons = []
+copy_image_destinations = {}
+def create_binary_mask(image, round=True):
+    if image.mode == 'RGBA' and image.getextrema()[-1] != (255, 255):
+        if round:
+            image = image.split()[-1].convert("L").point(lambda x: 255 if x > 128 else 0)
+        else:
+            image = image.split()[-1].convert("L")
     else:
-        generator = None
-    
-    # Run inference
-    output = pipe(
-        prompt=prompt,
-        negative_prompt=negative_prompt,
-        image=image,
-        mask_image=mask,
-        num_inference_steps=num_inference_steps,
-        guidance_scale=guidance_scale,
-        generator=generator,
-    ).images[0]
-    
-    return output
-
-# Create the Gradio interface
+        image = image.convert('L')
+    return image
+# Create Gradio interface
 with gr.Blocks() as demo:
-    gr.Markdown("# Stable Diffusion v2 Inpainting")
+    gr.Markdown("# Stable Diffusion Inpainting Demo")
     
     with gr.Row():
         with gr.Column():
-            input_image = gr.Image(label="Upload Image", type="numpy")
-            mask_image = gr.Image(
-                label="Draw Mask",
-                type="numpy",
-                tool="sketch",
-                brush_radius=20,
-            )
-            prompt = gr.Textbox(label="Prompt")
-            negative_prompt = gr.Textbox(
-                label="Negative Prompt",
-                value="low quality, bad anatomy, bad hands, cropped, worst quality"
-            )
-            
-            with gr.Row():
-                num_inference_steps = gr.Slider(
-                    label="Number of Steps",
-                    minimum=1,
-                    maximum=100,
-                    step=1,
-                    value=30
-                )
-                guidance_scale = gr.Slider(
-                    label="Guidance Scale",
-                    minimum=1,
-                    maximum=20,
-                    step=0.5,
-                    value=7.5
-                )
-                seed = gr.Number(
-                    label="Seed (blank for random)",
-                    precision=0
-                )
-            
-            run_button = gr.Button("Generate")
-        
+            with gr.TabItem('Inpaint', id='inpaint', elem_id="img2img_inpaint_tab") as tab_inpaint:
+                init_img_with_mask = gr.Image(label="Image for inpainting with mask", show_label=False, elem_id="img2maskimg", source="upload", interactive=True, type="pil", tool="sketch", image_mode="RGBA") 
+
+            submit = gr.Button("Generate")        
         with gr.Column():
-            output_image = gr.Image(label="Output")
+            output = gr.Image(label="Result")
     
-    run_button.click(
-        fn=inpaint,
-        inputs=[
-            input_image,
-            mask_image,
-            prompt,
-            negative_prompt,
-            num_inference_steps,
-            guidance_scale,
-            seed
-        ],
-        outputs=output_image,
+    submit.click(
+        fn=process_image,
+        inputs=init_img_with_mask,
+        outputs=output
     )
 
 if __name__ == "__main__":
