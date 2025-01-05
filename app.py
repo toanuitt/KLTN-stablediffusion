@@ -14,7 +14,7 @@ with gr.Blocks() as demo:
     with gr.Row():
         with gr.Column():
             init_img_with_mask = gr.Image(label="Image for inpainting with mask", 
-                                        type="np", tool="sketch", image_mode="RGBA")
+                                        type="numpy", tool="sketch", image_mode="RGBA")
             prompt = gr.Textbox(label="Prompt", placeholder="Enter your prompt here")
             negative_prompt = gr.Textbox(label="Negative Prompt", placeholder="Enter your negative prompt here")
             num_inference_steps = gr.Slider(minimum=1, maximum=100, value=30, label="Number of Inference Steps")
