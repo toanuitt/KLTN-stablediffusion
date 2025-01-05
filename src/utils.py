@@ -1,3 +1,10 @@
+import cv2
+import numpy as np
+import torch
+from diffusers import StableDiffusionInpaintPipeline, AutoencoderKL, UNet2DConditionModel
+from transformers import CLIPTextModel, CLIPTokenizer
+
+
 def get_mask(height, width, polygons):
         mask = np.zeros([height, width])
         for polygon in polygons:
@@ -24,12 +31,6 @@ def fill_img(img, mask, last_col):
 
     return img
 
-import torch
-from diffusers import StableDiffusionInpaintPipeline, AutoencoderKL, UNet2DConditionModel
-from transformers import CLIPTextModel, CLIPTokenizer
-from PIL import Image
-import numpy as np
-
 def restore_from_mask(
     pipe,
     tokenizer, 
@@ -40,7 +41,6 @@ def restore_from_mask(
     negative_prompt="",
     num_inference_steps=30,
     guidance_scale=7.5,
-    seed=None,
     denoise_strength=1.0,  # Added parameter for denoising strength (0.0 to 1.0)
     sampler="euler_a"  # Added parameter for sampling method
 ):

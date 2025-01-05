@@ -1,0 +1,11 @@
+generator_path: "your_generator_weight_path"
+rank: 0
+device: "cuda"
+input_nc: 1
+output_nc: 1
+extra_info: "expand" #none, expand, label, expand_label
+ngf: 64
+norm: instance
+output_type: regression #image, binary, regression
+unet_backbone: resnet50
+dropout: false
