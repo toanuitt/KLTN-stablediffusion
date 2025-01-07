@@ -60,7 +60,7 @@ def get_input(mask, expand_region, input_shape=[256, 256]):
     sdf_map = get_sdf_map(mask)
     expand_region = expand_region / 127.5 - 1
     data = np.concatenate([[sdf_map], [expand_region]], axis=0).astype(
-        np.float16
+        np.float32
     )
     print(data.shape)
     data = torch.as_tensor(data).unsqueeze(0)
