@@ -67,6 +67,8 @@ def process_image(
     data = utils.get_input(mask, expand_region, [256, 256])
     expand_mask = pix2pix_model.predict(data)
 
+    cv2.imwrite("expand_mask.png", expand_mask)
+
 
 with gr.Blocks() as demo:
     gr.Markdown("# Stable Diffusion Inpainting Demo")
