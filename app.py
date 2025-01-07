@@ -68,6 +68,7 @@ def process_image(
     )
     data = utils.get_input(mask, expand_region, [256, 256])
     expand_sdf_map = pix2pix_model.predict(data)
+    print(expand_sdf_map.shape)
     expand_mask = utils.get_binary_mask(expand_sdf_map)
     cv2.imwrite("expand_mask.png", expand_mask)
 

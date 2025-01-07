@@ -68,7 +68,6 @@ def get_input(mask, expand_region, input_shape=[256, 256]):
     data = np.concatenate([[sdf_map], [expand_region]], axis=0).astype(
         np.float32
     )
-    print(data.shape)
     data = torch.as_tensor(data).unsqueeze(0)
     return data
 
