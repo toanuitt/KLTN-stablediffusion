@@ -56,6 +56,7 @@ def process_image(
     denoise_strength,
     sampler,
 ):
+    expand_pixels = int(expand_pixels)
     image = img_with_mask["background"]
 
     mask = cv2.cvtColor(img_with_mask["layers"][0], cv2.COLOR_BGR2GRAY)
