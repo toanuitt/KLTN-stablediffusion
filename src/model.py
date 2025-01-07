@@ -22,7 +22,7 @@ class Pix2PixModel:
             self.input_nc,
             opt["output_nc"],
             opt["ngf"],
-            opt["netG"],
+            opt["arch"],
             opt["norm"],
             opt["dropout"],
             output_type=opt["output_type"],

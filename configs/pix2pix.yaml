@@ -1,6 +1,7 @@
 generator_path: "your_generator_weight_path"
 rank: 0
 device: "cuda"
+arch: "unet_256"
 input_nc: 1
 output_nc: 1
 extra_info: "expand" #none, expand, label, expand_label
