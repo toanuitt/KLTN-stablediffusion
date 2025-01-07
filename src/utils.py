@@ -53,7 +53,7 @@ def get_sdf_map(mask):
 
 
 def get_binary_mask(sdf_map):
-    binary_mask = np.transpose(sdf_map, (1, 2, 0))
+    binary_mask = np.transpose(sdf_map.squeeze(), (1, 2, 0))
     binary_mask = np.where(binary_mask < 0, 0, 255)
     return binary_mask
 
