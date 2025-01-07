@@ -53,6 +53,7 @@ def get_input(mask, expand_region, input_shape=[256, 256]):
     mask = mask / 127.5 - 1
     expand_region = expand_region / 127.5 - 1
     data = np.concatenate([mask, expand_region], axis=0)
+    print(data.shape)
     data = torch.as_tensor(data).float().unsqueeze(0)
     return data
 
