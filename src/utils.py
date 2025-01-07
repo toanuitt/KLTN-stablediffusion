@@ -7,6 +7,7 @@ from diffusers import (
     UNet2DConditionModel,
 )
 from transformers import CLIPTextModel, CLIPTokenizer
+import skfmm
 
 
 def resize(img, new_shape):
@@ -45,16 +46,24 @@ def get_expand_region(image_shape, expand_direction, expand_pixels):
     return expand_region.astype(np.uint8)
 
 
+def get_sdf_map(mask):
+    phi = np.where(mask == 255, 0.5, -0.5)
+    sdf_map = skfmm.distance(phi, dx=1)
+    return sdf_map
+
+
 def get_input(mask, expand_region, input_shape=[256, 256]):
     mask = resize(mask, input_shape)
     expand_region = resize(expand_region, input_shape)
     _, mask = cv2.threshold(mask, 128, 255, 0)
     _, expand_region = cv2.threshold(expand_region, 128, 255, 0)
-    mask = mask / 127.5 - 1
+    sdf_map = get_sdf_map(mask)
     expand_region = expand_region / 127.5 - 1
-    data = np.concatenate([[mask], [expand_region]], axis=0)
+    data = np.concatenate([[sdf_map], [expand_region]], axis=0).astype(
+        np.float16
+    )
     print(data.shape)
-    data = torch.as_tensor(data).float().unsqueeze(0)
+    data = torch.as_tensor(data).unsqueeze(0)
     return data
 
 

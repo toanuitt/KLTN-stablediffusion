@@ -35,6 +35,9 @@ class Pix2PixModel:
         if opt["generator_path"] is not None:
             self.load_network(opt["generator_path"])
 
+        if self.device != "cpu":
+            self.generator.to(self.device)
+
     def load_network(self, generator_path, weights_only=True):
         print("loading the model from %s" % generator_path)
         state_dict = torch.load(
