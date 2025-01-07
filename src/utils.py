@@ -52,6 +52,12 @@ def get_sdf_map(mask):
     return sdf_map
 
 
+def get_binary_mask(sdf_map):
+    binary_mask = np.transpose(sdf_map, (1, 2, 0))
+    binary_mask = np.where(binary_mask < 0, 0, 255)
+    return binary_mask
+
+
 def get_input(mask, expand_region, input_shape=[256, 256]):
     mask = resize(mask, input_shape)
     expand_region = resize(expand_region, input_shape)

@@ -75,4 +75,4 @@ class Pix2PixModel:
         with torch.no_grad():
             predict = self.generator(data.to(self.device))
 
-        return predict.detach().cpu()
+        return predict.detach().cpu().numpy()
