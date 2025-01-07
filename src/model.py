@@ -13,9 +13,9 @@ class Pix2PixModel:
         )
 
         self.input_nc = opt["input_nc"]
-        if "expand" in opt.extra_info:
+        if "expand" in opt["extra_info"]:
             self.input_nc += 1
-        if "label" in opt.extra_info:
+        if "label" in opt["extra_info"]:
             self.input_nc += 1
 
         self.generator = define_G(
