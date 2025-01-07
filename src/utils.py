@@ -6,7 +6,12 @@ from diffusers import (
     AutoencoderKL,
     UNet2DConditionModel,
 )
-from transformers import CLIPTextModel, CLIPTokenizer
+from transformers import (
+    CLIPTextModel,
+    CLIPTokenizer,
+    BlipProcessor,
+    BlipForConditionalGeneration,
+)
 import skfmm
 
 
@@ -22,9 +27,9 @@ def get_expand_mask(mask, expand_direction, expand_pixels):
     old_h, old_w = mask.shape[:2]
     new_w = old_w + expand_pixels
     new_mask = np.zeros([old_h, new_w])
-    if expand_direction.lower() == "left":
+    if expand_direction.lower() == "right":
         new_mask[:, :old_w] = mask
-    elif expand_direction.lower() == "right":
+    elif expand_direction.lower() == "left":
         new_mask[:, expand_pixels:] = mask
     else:
         raise Exception(f"Doesn't support direction {expand_direction}")
@@ -36,9 +41,9 @@ def get_expand_mask(mask, expand_direction, expand_pixels):
 def get_expand_region(image_shape, expand_direction, expand_pixels):
     expand_region = np.zeros(image_shape)
 
-    if expand_direction.lower() == "left":
+    if expand_direction.lower() == "right":
         expand_region[:, image_shape[1] :] = 255
-    elif expand_direction.lower() == "right":
+    elif expand_direction.lower() == "left":
         expand_region[:, :expand_pixels] = 255
     else:
         raise Exception(f"Doesn't support direction {expand_direction}")
@@ -53,7 +58,6 @@ def get_sdf_map(mask):
 
 
 def get_binary_mask(sdf_map):
-    # binary_mask = np.transpose(sdf_map.squeeze(), (1, 2, 0))
     binary_mask = np.where(sdf_map.squeeze() < 0, 0, 255)
     return binary_mask
 
@@ -78,29 +82,31 @@ def get_average_color(image, mask):
     return average_color
 
 
-def fill_img(img, mask, last_col):
-    img = np.array(img)
+def fill_img(img, mask, expand_direction, expand_pixels):
     average_color = get_average_color(img, mask)
-    if last_col > 0:
-        img[:, :last_col] = average_color
-    else:
-        img[:, last_col + 1 :] = average_color
 
-    return img
+    old_h, old_w = img.shape[:2]
+    new_w = old_w + expand_pixels
+    new_img = np.zeros([old_h, new_w, 3])
+
+    if expand_direction.lower() == "left":
+        new_img[:, expand_pixels:] = average_color
+    elif expand_direction.lower() == "right":
+        new_img[:, :old_h] = average_color
+
+    return average_color
 
 
 def restore_from_mask(
     pipe,
-    tokenizer,
-    text_encoder,
-    init_image,
-    mask_image,
-    prompt="",
-    negative_prompt="",
+    init_images,
+    mask_images,
+    prompts=[],
+    negative_prompts=[],
     num_inference_steps=30,
     guidance_scale=7.5,
-    denoise_strength=1.0,  # Added parameter for denoising strength (0.0 to 1.0)
-    sampler="euler_a",  # Added parameter for sampling method
+    denoise_strength=0.75,
+    sampler="euler",
 ):
     """
     Restore an image using stable diffusion inpainting with customizable parameters.
@@ -122,11 +128,9 @@ def restore_from_mask(
     """
 
     # Set device and optimize memory
-    device = "cuda" if torch.cuda.is_available() else "cpu"
-    pipe = pipe.to(device)
+    torch.cuda.empty_cache()
     pipe.enable_attention_slicing()
 
-    # Set the scheduler based on the chosen sampling method
     if sampler == "euler_a":
         from diffusers import EulerAncestralDiscreteScheduler
 
@@ -177,55 +181,31 @@ def restore_from_mask(
             use_karras_sigmas=True,
             algorithm_type="sde-dpmsolver++",
         )
-    # Resize images to match model's requirements
-
-    target_size = (512, 512)  # Standard size for Stable Diffusion
-    init_image = init_image.resize(target_size)
-    mask_image = mask_image.resize(target_size)
-
-    # Encode text prompts
-    text_inputs = tokenizer(
-        [prompt],
-        padding="max_length",
-        max_length=tokenizer.model_max_length,
-        truncation=True,
-        return_tensors="pt",
-    )
-    text_embeddings = text_encoder(text_inputs.input_ids.to(device))[0]
-
-    # Encode negative prompts
-    uncond_inputs = tokenizer(
-        [negative_prompt],
-        padding="max_length",
-        max_length=tokenizer.model_max_length,
-        truncation=True,
-        return_tensors="pt",
-    )
-    uncond_embeddings = text_encoder(uncond_inputs.input_ids.to(device))[0]
-
-    text_embeddings = torch.cat([uncond_embeddings, text_embeddings])
 
     with torch.inference_mode():
-        output = pipe(
-            prompt=prompt,
-            negative_prompt=negative_prompt,
-            image=init_image,
-            mask_image=mask_image,
+        outputs = pipe(
+            prompt=prompts,
+            negative_prompt=negative_prompts,
+            image=init_images,
+            mask_image=mask_images,
             guidance_scale=guidance_scale,
             num_inference_steps=num_inference_steps,
-            strength=denoise_strength,  # Using the denoise_strength parameter
-        ).images[0]
+            strength=denoise_strength,
+            output_type="np",
+        ).images
+    torch.cuda.empty_cache()
 
-    # Clean up GPU memory
-    if device == "cuda":
-        pipe = pipe.to("cpu")
-        torch.cuda.empty_cache()
+    images = []
+    for image in outputs:
+        image = (image * 255).astype(np.uint8)
+        image = cv2.cvtColor(image, cv2.COLOR_RGB2BGR)
+        images.append(image)
 
-    return output
+    return images
 
 
-def generate_image_caption(model, processor, image):
-    inputs = processor(image, return_tensors="pt")
+def generate_image_caption(model, processor, image, device):
+    inputs = processor(image, return_tensors="pt").to(device)
     outputs = model.generate(
         **inputs,
         max_new_tokens=512,
@@ -252,6 +232,14 @@ def get_sd_pipeline(model_id, seed):
         text_encoder=text_encoder,
         tokenizer=tokenizer,
         unet=unet,
+        torch_dtype=torch.float16,
         safety_checker=None,
     )
-    return pipe, tokenizer, text_encoder
+    return pipe
+
+
+def get_blip(model_id):
+    model = BlipForConditionalGeneration.from_pretrained(model_id)
+    processor = BlipProcessor.from_pretrained(model_id)
+
+    return model, processor

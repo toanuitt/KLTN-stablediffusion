@@ -18,6 +18,8 @@ def get_args():
     parser.add_argument(
         "--sd-pipeline-config", type=str, default="configs/sd_pipeline.yaml"
     )
+    parser.add_argument("--blip-config", type=str, default="configs/blip.yaml")
+    parser.add_argument("--device", type=str, default="cpu")
     args = parser.parse_args()
     return args
 
@@ -29,6 +31,7 @@ def init_models(args):
     assert os.path.exists(
         args.sd_pipeline_config
     ), f"Cannot find {args.sd_pipeline_config}"
+    assert os.path.exists(args.blip_config), f"Cannot find {args.blip_config}"
 
     with open(args.pix2pix_config) as pix2pix_file:
         pix2pix_opts = yaml.safe_load(pix2pix_file)
@@ -36,14 +39,20 @@ def init_models(args):
     with open(args.sd_pipeline_config) as sd_pipeline_file:
         sd_pipeline_opts = yaml.safe_load(sd_pipeline_file)
 
+    with open(args.blip_config) as blip_file:
+        blip_opts = yaml.safe_load(blip_file)
+
     opts = dict()
     opts["pix2pix"] = pix2pix_opts
     opts["sd"] = sd_pipeline_opts
+    opts["blip"] = blip_opts
+    opts["device"] = pix2pix_opts["model"]
 
     pix2pix_model = Pix2PixModel(opts["pix2pix"])
-    pipeline = None
+    pipeline = utils.get_sd_pipeline(opts["sd"]["model_id"], opts["sd"]["seed"])
+    blip_model, blip_proccessor = utils.get_blip(opts["blip"]["model_id"])
 
-    return pix2pix_model, pipeline
+    return pix2pix_model, pipeline, blip_model, blip_proccessor
 
 
 def process_image(
@@ -61,15 +70,26 @@ def process_image(
     image = img_with_mask["background"]
 
     mask = cv2.cvtColor(img_with_mask["layers"][0], cv2.COLOR_BGR2GRAY)
-    mask = utils.get_expand_mask(mask, expand_direction, expand_pixels)
+    expand_mask = utils.get_expand_mask(mask, expand_direction, expand_pixels)
 
     expand_region = utils.get_expand_region(
         image.shape[:2], expand_direction, expand_pixels
     )
-    data = utils.get_input(mask, expand_region, [256, 256])
+    final_h, final_w = expand_mask.shape[:2]
+    data = utils.get_input(expand_mask, expand_region, [256, 256])
     expand_sdf_map = pix2pix_model.predict(data)
-    expand_mask = utils.get_binary_mask(expand_sdf_map)
-    cv2.imwrite("expand_mask.png", expand_mask)
+
+    complete_mask = utils.get_binary_mask(expand_sdf_map)
+    complete_mask = utils.resize(complete_mask, [final_h, final_w])
+    _, complete_mask = cv2.threshold(complete_mask, 128, 255, 0)
+
+    expand_mask = np.where(expand_region == 0, complete_mask, 0)
+
+    image_filled = utils.fill_img(image, mask, expand_direction, expand_pixels)
+
+    caption = utils.generate_image_caption(
+        blip_model, blip_proccessor, image_filled, device
+    )
 
 
 with gr.Blocks() as demo:
@@ -140,5 +160,8 @@ with gr.Blocks() as demo:
 
 if __name__ == "__main__":
     args = get_args()
-    pix2pix_model, pipeline = init_models(args)
+    pix2pix_model, pipeline, blip_model, blip_proccessor = init_models(args)
+    device = args.device
+    if device != "cpu":
+        device = f"cuda:{device}"
     demo.launch(share=True)
