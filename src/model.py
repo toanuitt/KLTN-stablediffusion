@@ -12,7 +12,7 @@ class Pix2PixModel:
             else torch.device("cpu")
         )
 
-        self.input_nc = opt.input_nc
+        self.input_nc = opt["input_nc"]
         if "expand" in opt.extra_info:
             self.input_nc += 1
         if "label" in opt.extra_info:
