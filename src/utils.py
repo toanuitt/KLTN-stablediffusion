@@ -18,7 +18,7 @@ def resize(img, new_shape):
 
 
 def get_expand_mask(mask, expand_direction, expand_pixels):
-    old_h, old_w = mask[:2]
+    old_h, old_w = mask.shape[:2]
     new_w = old_w + expand_pixels
     new_mask = np.zeros([old_h, new_w])
     if expand_direction.lower() == "left":
