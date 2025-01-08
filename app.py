@@ -75,6 +75,7 @@ def process_image(
 ):
     expand_pixels = int(expand_pixels)
     image = img_with_mask["background"]
+    unet_input_shape = [512, 512]
 
     mask = cv2.cvtColor(img_with_mask["layers"][0], cv2.COLOR_BGR2GRAY)
     expand_mask = utils.get_expand_mask(mask, expand_direction, expand_pixels)
@@ -92,11 +93,14 @@ def process_image(
     _, complete_mask = cv2.threshold(complete_mask, 128, 255, 0)
 
     expand_mask = np.where(expand_region == 0, complete_mask, 0)
+    expand_mask = utils.resize(expand_mask, unet_input_shape)
+    _, expand_mask = cv2.threshold(expand_mask, 128, 255, 0)
 
     image_filled = utils.fill_img(image, mask, expand_direction, expand_pixels)
     caption = utils.generate_image_caption(
         blip_model, blip_proccessor, image_filled, device
     )
+    image_filled = utils.resize(image_filled, unet_input_shape)
 
     neg_prompt = "worst quality, low quality, illustration, 3d, 2d, painting, cartoons, text, sketch, open mouth"
 
