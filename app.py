@@ -182,6 +182,11 @@ with gr.Blocks() as demo:
                             type="numpy",
                             image_mode="RGB"
                         )
+                        mask_output = gr.Image(
+                            label="Generated Mask",
+                            type="numpy",
+                            image_mode="RGB"
+                        )
             expand_direction = gr.Radio(
                 label="Direction to expand image", choices=["Left", "Right"]
             )
