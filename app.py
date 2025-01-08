@@ -46,11 +46,18 @@ def init_models(args):
     opts["pix2pix"] = pix2pix_opts
     opts["sd"] = sd_pipeline_opts
     opts["blip"] = blip_opts
-    opts["device"] = args.device
+
+    if args.device == "cpu":
+        opts["device"] = args.device
+    else:
+        opts["device"] = f"cuda:{args.device}"
 
     pix2pix_model = Pix2PixModel(opts["pix2pix"])
     pipeline = utils.get_sd_pipeline(opts["sd"]["model_id"], opts["sd"]["seed"])
     blip_model, blip_proccessor = utils.get_blip(opts["blip"]["model_id"])
+
+    pipeline.to(opts["device"])
+    blip_model.to(opts["device"])
 
     return pix2pix_model, pipeline, blip_model, blip_proccessor
 
