@@ -122,6 +122,7 @@ def process_image(
 
     result_image = utils.resize(result_image, [final_h, final_w])
     cv2.imwrite("result.png", result_image)
+    return result_image
 
 
 with gr.Blocks() as demo:
