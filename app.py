@@ -87,7 +87,7 @@ def process_image(
     expand_mask = np.where(expand_region == 0, complete_mask, 0)
 
     image_filled = utils.fill_img(image, mask, expand_direction, expand_pixels)
-
+    print(image_filled.shape)
     caption = utils.generate_image_caption(
         blip_model, blip_proccessor, image_filled, device
     )
