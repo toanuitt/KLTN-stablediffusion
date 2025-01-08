@@ -96,10 +96,14 @@ def process_image(
     expand_mask = utils.resize(expand_mask, unet_input_shape)
     _, expand_mask = cv2.threshold(expand_mask, 128, 255, 0)
 
+    object_image = utils.get_object_image(image, mask)
+
+    if prompt == "":
+        prompt = utils.generate_image_caption(
+            blip_model, blip_proccessor, object_image, device
+        )
+
     image_filled = utils.fill_img(image, mask, expand_direction, expand_pixels)
-    caption = utils.generate_image_caption(
-        blip_model, blip_proccessor, image_filled, device
-    )
     image_filled = utils.resize(image_filled, unet_input_shape)
 
     cv2.imwrite("expand_region.png", expand_region)
@@ -113,7 +117,7 @@ def process_image(
         pipe=pipeline,
         init_images=[image_filled],
         mask_images=[expand_mask],
-        prompts=[caption],
+        prompts=[prompt],
         negative_prompts=[neg_prompt],
         sampler=sampler,
         num_inference_steps=num_inference_steps,
@@ -123,7 +127,8 @@ def process_image(
 
     result_image = utils.resize(result_image, [final_h, final_w])
     cv2.imwrite("result.png", result_image)
-    return result_image
+
+    return cv2.cvtColor(result_image, cv2.COLOR_BGR2RGB)
 
 
 with gr.Blocks() as demo:
@@ -160,6 +165,7 @@ with gr.Blocks() as demo:
                 maximum=100,
                 value=30,
                 label="Number of Inference Steps",
+                step=1,
             )
             guidance_scale = gr.Slider(
                 minimum=1.0, maximum=20.0, value=7.5, label="Guidance Scale"

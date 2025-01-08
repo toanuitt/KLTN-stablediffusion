@@ -105,6 +105,11 @@ def fill_img(img, mask, expand_direction, expand_pixels):
     return new_img
 
 
+def get_object_image(image, mask):
+    mask_inv = ~mask
+    return cv2.bitwise_or(image, mask_inv)
+
+
 def restore_from_mask(
     pipe,
     init_images,
