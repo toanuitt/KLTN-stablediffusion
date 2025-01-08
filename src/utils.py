@@ -100,7 +100,7 @@ def fill_img(img, mask, expand_direction, expand_pixels):
     elif expand_direction.lower() == "right":
         new_img[:, :old_h] = average_color
 
-    return average_color
+    return new_img
 
 
 def restore_from_mask(
