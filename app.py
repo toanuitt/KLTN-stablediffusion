@@ -72,6 +72,7 @@ def process_image(
     mask = cv2.cvtColor(img_with_mask["layers"][0], cv2.COLOR_BGR2GRAY)
     expand_mask = utils.get_expand_mask(mask, expand_direction, expand_pixels)
 
+    final_h, final_w = expand_mask.shape[:2]
     expand_region = utils.get_expand_region(
         image.shape[:2], expand_direction, expand_pixels
     )
@@ -90,6 +91,22 @@ def process_image(
     caption = utils.generate_image_caption(
         blip_model, blip_proccessor, image_filled, device
     )
+
+    neg_prompt = "worst quality, low quality, illustration, 3d, 2d, painting, cartoons, text, sketch, open mouth"
+
+    result_image = utils.restore_from_mask(
+        pipe=pipeline,
+        init_images=[image_filled],
+        mask_images=[expand_mask],
+        prompts=[caption],
+        sampler=sampler,
+        num_inference_steps=num_inference_steps,
+        denoise_strength=denoise_strength,
+        guidance_scale=guidance_scale,
+    )
+
+    result_image = utils.resize(result_image, [final_h, final_w])
+    cv2.imwrite("result.png", result_image)
 
 
 with gr.Blocks() as demo:
