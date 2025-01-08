@@ -199,7 +199,7 @@ def restore_from_mask(
             guidance_scale=guidance_scale,
             num_inference_steps=num_inference_steps,
             output_type="np",
-            strength=1.0,
+            strength=denoise_strength,
         ).images
     torch.cuda.empty_cache()
 
