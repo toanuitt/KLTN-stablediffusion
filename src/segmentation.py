@@ -2,7 +2,7 @@ import numpy as np
 import cv2
 from ultralytics import YOLO
 
-model = YOLO('yolov11x-seg.pt')
+model = YOLO('yolo11x-seg.pt')
 
 def get_segmentation_masks(image):
     height, width = image.shape[:2]
