@@ -43,10 +43,12 @@ def get_expand_mask(mask, expand_direction, expand_pixels):
 
 
 def get_expand_region(image_shape, expand_direction, expand_pixels):
-    expand_region = np.zeros(image_shape)
+    old_h, old_w = image_shape
+    new_w = old_w + expand_pixels
+    expand_region = np.zeros([old_h, new_w])
 
     if expand_direction.lower() == "right":
-        expand_region[:, image_shape[1] :] = 255
+        expand_region[:, old_w:] = 255
     elif expand_direction.lower() == "left":
         expand_region[:, :expand_pixels] = 255
     else:
