@@ -102,6 +102,9 @@ def process_image(
     )
     image_filled = utils.resize(image_filled, unet_input_shape)
 
+    cv2.imwrite("expand_mask.png", expand_mask)
+    cv2.imwrite("img_filled.png", image_filled)
+
     neg_prompt = "worst quality, low quality, illustration, 3d, 2d, painting, cartoons, text, sketch, open mouth"
 
     result_image = utils.restore_from_mask(
