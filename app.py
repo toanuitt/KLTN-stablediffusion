@@ -128,6 +128,8 @@ def process_image(
         cv2.imwrite("result.png", result_image)
         return result_image
     else:
+        mask_output = mask_output
+        cv2.imwrite("result.png", mask_output)
         return img_upload
     
 stored_masks = []
@@ -148,12 +150,11 @@ def apply_mask_to_image(image, mask):
     return masked_image
 def update_mask(image, selected_class_idx):
     if selected_class_idx is None:
-        return None
+        return None, None
     mask = create_mask_for_class(image, stored_masks, selected_class_idx)
     masked_region = apply_mask_to_image(image, mask)
     return mask, masked_region
 
-mask_output = gr.State()
 with gr.Blocks() as demo:
     gr.Markdown("# Stable Diffusion Inpainting Demo")
     with gr.Row():
@@ -183,15 +184,13 @@ with gr.Blocks() as demo:
                         choices=[],
                         type="index"
                     )
-                    with gr.Row():
-
-                        masked_region = gr.Image(
+                    mask_output = gr.Image(
+                        label="Generated Mask",
+                        type="numpy",
+                        image_mode="RGB"
+                    )
+                    masked_region = gr.Image(
                             label="Masked Region",
-                            type="numpy",
-                            image_mode="RGB"
-                        )
-                        mask_output = gr.Image(
-                            label="Generated Mask",
                             type="numpy",
                             image_mode="RGB"
                         )
@@ -240,7 +239,7 @@ with gr.Blocks() as demo:
     class_dropdown.change(
         fn=update_mask,
         inputs=[img_upload, class_dropdown],
-        outputs=[mask_output]
+        outputs=[mask_output, masked_region]
     )
     submit.click(
         fn=process_image,
