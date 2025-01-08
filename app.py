@@ -110,7 +110,7 @@ def process_image(
         cv2.imwrite("expand_mask.png", expand_mask)
         cv2.imwrite("img_filled.png", image_filled)
 
-        neg_prompt = "worst quality, low quality, illustration, 3d, 2d, painting, cartoons, text, sketch, open mouth"
+        neg_prompt = "worst quality, low quality, text, cartoon, illustration, anime, 3D render, unrealistic, CGI, sketch, abstract, painting, watermark, signature, logo, extra limbs, extra digits, bad anatomy, fused fingers, extra appendages, missing limbs, blurry, low resolution, grainy, noise, JPEG artifacts, overexposed, oversaturated, underexposed, surreal, unrealistic features, unnatural colors, distorted elements, disproportionate structures"
 
         result_image = utils.restore_from_mask(
             pipe=pipeline,
