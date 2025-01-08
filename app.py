@@ -176,7 +176,7 @@ with gr.Blocks() as demo:
                         eraser=gr.Eraser(),
                         layers=False,
                         height=512,
-                        width=512,
+                        width=1024,
                         transforms=[],
                         elem_id="image-editor" 
                     )
