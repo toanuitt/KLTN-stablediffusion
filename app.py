@@ -105,6 +105,7 @@ def process_image(
         init_images=[image_filled],
         mask_images=[expand_mask],
         prompts=[caption],
+        negative_prompts=[neg_prompt]
         sampler=sampler,
         num_inference_steps=num_inference_steps,
         denoise_strength=denoise_strength,
