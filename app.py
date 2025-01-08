@@ -66,7 +66,6 @@ def init_models(args):
 def process_image(
     img_with_mask,
     img_upload,
-    mask_output,
     expand_direction,
     expand_pixels,
     prompt,
@@ -129,8 +128,6 @@ def process_image(
         cv2.imwrite("result.png", result_image)
         return result_image
     else:
-        mask_output = mask_output
-        cv2.imwrite("result.png", mask_output)
         return img_upload
     
 stored_masks = []
@@ -141,18 +138,9 @@ def detect_objects(image):
     stored_masks = masks
     return gr.Dropdown(choices=classes)
 
-def apply_mask_to_image(image, mask):
-    if mask is None or image is None:
-        return None
-    # Create black background
-    masked_image = np.zeros_like(image)
-    # Copy only the masked region from original image
-    masked_image[mask > 127] = image[mask > 127]
-    return masked_image
-
 def update_mask(image, selected_class_idx):
     if selected_class_idx is None:
-        return None, None
+        return None
     mask = create_mask_for_class(image, stored_masks, selected_class_idx)
     masked_region = apply_mask_to_image(image, mask)
     return mask, masked_region
@@ -239,7 +227,7 @@ with gr.Blocks() as demo:
     class_dropdown.change(
         fn=update_mask,
         inputs=[img_upload, class_dropdown],
-        outputs=[mask_output, masked_region]
+        outputs=[mask_output]
     )
     submit.click(
         fn=process_image,
@@ -247,7 +235,6 @@ with gr.Blocks() as demo:
             img_with_mask,
             img_upload,
             expand_direction,
-            mask_output,
             expand_pixels,
             prompt,
             negative_prompt,
