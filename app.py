@@ -8,7 +8,7 @@ import cv2
 
 from src.model import Pix2PixModel
 from src import utils
-from src.segmentation import get_segmentation_masks, create_mask_for_class
+from src.segmentation import *
 
 
 def get_args():
@@ -134,26 +134,6 @@ def process_image(
     
 stored_masks = []
 
-def detect_objects(image):
-    global stored_masks
-    classes, masks = get_segmentation_masks(image)
-    stored_masks = masks
-    return gr.Dropdown(choices=classes)
-
-def apply_mask_to_image(image, mask):
-    if mask is None or image is None:
-        return None
-    # Create black background
-    masked_image = np.zeros_like(image)
-    # Copy only the masked region from original image
-    masked_image[mask > 127] = image[mask > 127]
-    return masked_image
-def update_mask(image, selected_class_idx):
-    if selected_class_idx is None:
-        return None, None
-    mask = create_mask_for_class(image, stored_masks, selected_class_idx)
-    masked_region = apply_mask_to_image(image, mask)
-    return mask, masked_region
 css = """
 #image-editor {
     display: block;

@@ -56,3 +56,25 @@ def create_mask_for_class(image, masks, selected_class_idx):
         mask_image[mask_binary] = 255
         return mask_image
     return None
+
+
+def detect_objects(image):
+    global stored_masks
+    classes, masks = get_segmentation_masks(image)
+    stored_masks = masks
+    return gr.Dropdown(choices=classes)
+
+def apply_mask_to_image(image, mask):
+    if mask is None or image is None:
+        return None
+    # Create black background
+    masked_image = np.zeros_like(image)
+    # Copy only the masked region from original image
+    masked_image[mask > 127] = image[mask > 127]
+    return masked_image
+def update_mask(image, selected_class_idx):
+    if selected_class_idx is None:
+        return None, None
+    mask = create_mask_for_class(image, stored_masks, selected_class_idx)
+    masked_region = apply_mask_to_image(image, mask)
+    return mask, masked_region
