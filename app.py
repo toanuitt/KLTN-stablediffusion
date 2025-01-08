@@ -92,7 +92,7 @@ def process_image(
     complete_mask = utils.resize(complete_mask, [final_h, final_w])
     _, complete_mask = cv2.threshold(complete_mask, 128, 255, 0)
 
-    expand_mask = np.where(expand_region == 0, complete_mask, 0)
+    expand_mask = np.where(expand_region == 255, complete_mask, 0)
     expand_mask = utils.resize(expand_mask, unet_input_shape)
     _, expand_mask = cv2.threshold(expand_mask, 128, 255, 0)
 
