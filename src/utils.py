@@ -196,7 +196,6 @@ def restore_from_mask(
             mask_image=mask_images,
             guidance_scale=guidance_scale,
             num_inference_steps=num_inference_steps,
-            strength=denoise_strength,
             output_type="np",
         ).images
     torch.cuda.empty_cache()
