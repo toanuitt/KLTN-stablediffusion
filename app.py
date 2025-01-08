@@ -157,7 +157,7 @@ def update_mask(image, selected_class_idx):
     masked_region = apply_mask_to_image(image, mask)
     return mask, masked_region
 
-
+mask_output = gr.State()
 with gr.Blocks() as demo:
     gr.Markdown("# Stable Diffusion Inpainting Demo")
     with gr.Row():
@@ -188,11 +188,7 @@ with gr.Blocks() as demo:
                         type="index"
                     )
                     with gr.Row():
-                        mask_output = gr.Image(
-                            label="Generated Mask",
-                            type="numpy",
-                            image_mode="RGB"
-                        )
+
                         masked_region = gr.Image(
                             label="Masked Region",
                             type="numpy",
