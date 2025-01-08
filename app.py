@@ -72,9 +72,9 @@ def process_image(
     guidance_scale,
     denoise_strength,
     sampler,
-    sketch,
+    active_tab
 ):
-    if sketch:
+    if active_tab == "sketch":
         expand_pixels = int(expand_pixels)
         image = img_with_mask["background"]
         unet_input_shape = [512, 512]
@@ -124,14 +124,17 @@ def process_image(
 
         result_image = utils.resize(result_image, [final_h, final_w])
         cv2.imwrite("result.png", result_image)
-    return result_image
+        return result_image
+    else:
+        return None
+
 
 
 with gr.Blocks() as demo:
     gr.Markdown("# Stable Diffusion Inpainting Demo")
     with gr.Row():
         with gr.Column():
-            with gr.Tabs():
+            with gr.Tabs() as tabs:
                 with gr.Tab("Sketch"):
                     img_with_mask_sketch = gr.ImageEditor(
                         label="Image for inpainting with mask",
@@ -142,14 +145,21 @@ with gr.Blocks() as demo:
                         eraser=gr.Eraser(),
                         layers=False,
                     )
-                    sketch = True
                 with gr.Tab("Detect"):
-                    init_img_with_mask_detect = gr.Image(
+                    img_with_mask_detect = gr.Image(
                         label="Upload image",
                         type="pil",
                         image_mode="RGB"
                     )
-                    sketch = False
+                    detected_classes = gr.Textbox(
+                        label="Detected Classes",
+                        interactive=False
+                    )
+                    selected_classes = gr.Dropdown(
+                        label="Select Classes to Mask",
+                        choices=[],
+                        multiselect=True
+                    )
             
             expand_direction = gr.Radio(
                 label="Direction to expand image", choices=["Left", "Right"]
@@ -201,7 +211,7 @@ with gr.Blocks() as demo:
             guidance_scale,
             denoise_strength,
             sampler,
-            sketch,
+            tabs,
         ],
         outputs=output,
     )
