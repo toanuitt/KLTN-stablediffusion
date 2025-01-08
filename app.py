@@ -169,6 +169,8 @@ with gr.Blocks() as demo:
                         brush=gr.Brush(colors=["#ffffff"], color_mode="fixed"),
                         eraser=gr.Eraser(),
                         layers=False,
+                        height=512,
+                        width=512,
                     )
                 
                 with gr.Tab("Upload Mode"):
