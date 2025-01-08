@@ -97,8 +97,10 @@ def fill_img(img, mask, expand_direction, expand_pixels):
 
     if expand_direction.lower() == "left":
         new_img[:, :expand_pixels] = average_color
+        new_img[:, expand_pixels:] = img
     elif expand_direction.lower() == "right":
         new_img[:, old_h:] = average_color
+        new_img[:, :old_h] = img
 
     return new_img
 
