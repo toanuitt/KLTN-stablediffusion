@@ -18,9 +18,13 @@ import skfmm
 def resize(img, new_shape):
     img_h, img_w = img.shape[:2]
     if img_h > new_shape[0] or img_w > new_shape[1]:
-        return cv2.resize(img, (new_shape[1], new_shape[0]), cv2.INTER_AREA)
+        return cv2.resize(
+            img.astype(np.uint8), (new_shape[1], new_shape[0]), cv2.INTER_AREA
+        )
     else:
-        return cv2.resize(img, (new_shape[1], new_shape[0]), cv2.INTER_LINEAR)
+        return cv2.resize(
+            img.astype(np.uint8), (new_shape[1], new_shape[0]), cv2.INTER_LINEAR
+        )
 
 
 def get_expand_mask(mask, expand_direction, expand_pixels):
