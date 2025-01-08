@@ -74,7 +74,7 @@ def process_image(
     denoise_strength,
     sampler,
 ):
-    if img_with_mask is None:
+    if img_upload is None:
         image = img_upload
         expand_pixels = int(expand_pixels)
         image = img_with_mask["background"]
