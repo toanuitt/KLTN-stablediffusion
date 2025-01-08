@@ -202,7 +202,7 @@ with gr.Blocks() as demo:
         fn=process_image,
         inputs=[
             img_with_mask_sketch,
-            init_img_with_mask_detect,
+            img_with_mask_detect,
             expand_direction,
             expand_pixels,
             prompt,
