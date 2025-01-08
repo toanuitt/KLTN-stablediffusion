@@ -138,6 +138,14 @@ def detect_objects(image):
     stored_masks = masks
     return gr.Dropdown(choices=classes)
 
+def apply_mask_to_image(image, mask):
+    if mask is None or image is None:
+        return None
+    # Create black background
+    masked_image = np.zeros_like(image)
+    # Copy only the masked region from original image
+    masked_image[mask > 127] = image[mask > 127]
+    return masked_image
 def update_mask(image, selected_class_idx):
     if selected_class_idx is None:
         return None
