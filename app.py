@@ -74,7 +74,7 @@ def process_image(
     sampler,
     active_tab
 ):
-    if active_tab == "sketch":
+    if active_tab == "Sketch":
         expand_pixels = int(expand_pixels)
         image = img_with_mask["background"]
         unet_input_shape = [512, 512]
