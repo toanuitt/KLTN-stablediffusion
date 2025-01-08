@@ -114,7 +114,7 @@ def process_image(
         num_inference_steps=num_inference_steps,
         denoise_strength=denoise_strength,
         guidance_scale=guidance_scale,
-    )
+    )[0]
 
     result_image = utils.resize(result_image, [final_h, final_w])
     cv2.imwrite("result.png", result_image)
