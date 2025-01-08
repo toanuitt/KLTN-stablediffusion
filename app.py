@@ -201,8 +201,8 @@ with gr.Blocks() as demo:
     submit.click(
         fn=process_image,
         inputs=[
-            img_with_mask_sketch,
-            img_with_mask_detect,
+            img_with_mask_sketch.select("image"), # Get only the image component
+            img_with_mask_detect.select("image"), # Get only the image component
             expand_direction,
             expand_pixels,
             prompt,
@@ -210,10 +210,9 @@ with gr.Blocks() as demo:
             num_inference_steps,
             guidance_scale,
             denoise_strength,
-            sampler,
-            tabs,
+            sampler
         ],
-        outputs=output,
+        outputs=output
     )
 
 if __name__ == "__main__":
