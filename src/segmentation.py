@@ -4,6 +4,9 @@ from ultralytics import YOLO
 
 model = YOLO('yolo11x-seg.pt')
 
+# Define allowed classes
+ALLOWED_CLASSES = {'apple', 'bird', 'dog', 'cat', 'car', 'airplane', 'giraffe', 'sheep', 'train'}
+
 def get_segmentation_masks(image):
     height, width = image.shape[:2]
     results = model(image, stream=True)
@@ -16,7 +19,11 @@ def get_segmentation_masks(image):
     for result in results:
         if result.masks is not None:
             for seg, cls in zip(result.masks.data, result.boxes.cls):
-                class_name = result.names[int(cls)]
+                class_name = result.names[int(cls)].lower()
+                
+                # Skip if class not in allowed classes
+                if class_name not in ALLOWED_CLASSES:
+                    continue
                 
                 # Update instance count
                 if class_name not in instance_counts:
