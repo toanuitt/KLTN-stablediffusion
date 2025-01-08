@@ -160,7 +160,7 @@ with gr.Blocks() as demo:
     with gr.Row():
         with gr.Column():
             with gr.Tabs() as tabs:
-                with gr.Tab("Inpaint Mode"):
+                with gr.Tab("Inpaint Mode") :
                     img_with_mask = gr.ImageEditor(
                         label="Image for inpainting with mask",
                         sources=["upload"],

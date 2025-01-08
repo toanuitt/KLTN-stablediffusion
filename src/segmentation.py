@@ -25,7 +25,7 @@ def get_segmentation_masks(image):
                     instance_counts[class_name] += 1
                 
                 # Create instance-specific label
-                instance_label = f"{class_name}{instance_counts[class_name]}"
+                instance_label = f"id_{instance_counts[class_name]}"
                 
                 # Convert mask to numpy and resize
                 mask = seg.cpu().numpy()
