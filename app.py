@@ -72,62 +72,57 @@ def process_image(
     guidance_scale,
     denoise_strength,
     sampler,
-    active_tab
 ):
-    if active_tab == "Sketch":
-        expand_pixels = int(expand_pixels)
-        image = img_with_mask["background"]
-        unet_input_shape = [512, 512]
+    expand_pixels = int(expand_pixels)
+    image = img_with_mask["background"]
+    unet_input_shape = [512, 512]
 
-        mask = cv2.cvtColor(img_with_mask["layers"][0], cv2.COLOR_BGR2GRAY)
-        expand_mask = utils.get_expand_mask(mask, expand_direction, expand_pixels)
+    mask = cv2.cvtColor(img_with_mask["layers"][0], cv2.COLOR_BGR2GRAY)
+    expand_mask = utils.get_expand_mask(mask, expand_direction, expand_pixels)
 
-        final_h, final_w = expand_mask.shape[:2]
-        expand_region = utils.get_expand_region(
-            image.shape[:2], expand_direction, expand_pixels
-        )
-        final_h, final_w = expand_mask.shape[:2]
-        data = utils.get_input(expand_mask, expand_region, [256, 256])
-        expand_sdf_map = pix2pix_model.predict(data)
+    final_h, final_w = expand_mask.shape[:2]
+    expand_region = utils.get_expand_region(
+        image.shape[:2], expand_direction, expand_pixels
+    )
+    final_h, final_w = expand_mask.shape[:2]
+    data = utils.get_input(expand_mask, expand_region, [256, 256])
+    expand_sdf_map = pix2pix_model.predict(data)
 
-        complete_mask = utils.get_binary_mask(expand_sdf_map)
-        complete_mask = utils.resize(complete_mask, [final_h, final_w])
-        _, complete_mask = cv2.threshold(complete_mask, 128, 255, 0)
+    complete_mask = utils.get_binary_mask(expand_sdf_map)
+    complete_mask = utils.resize(complete_mask, [final_h, final_w])
+    _, complete_mask = cv2.threshold(complete_mask, 128, 255, 0)
 
-        expand_mask = np.where(expand_region == 255, complete_mask, 0)
-        expand_mask = utils.resize(expand_mask, unet_input_shape)
-        _, expand_mask = cv2.threshold(expand_mask, 128, 255, 0)
+    expand_mask = np.where(expand_region == 255, complete_mask, 0)
+    expand_mask = utils.resize(expand_mask, unet_input_shape)
+    _, expand_mask = cv2.threshold(expand_mask, 128, 255, 0)
 
-        image_filled = utils.fill_img(image, mask, expand_direction, expand_pixels)
-        caption = utils.generate_image_caption(
-            blip_model, blip_proccessor, image_filled, device
-        )
-        image_filled = utils.resize(image_filled, unet_input_shape)
+    image_filled = utils.fill_img(image, mask, expand_direction, expand_pixels)
+    caption = utils.generate_image_caption(
+        blip_model, blip_proccessor, image_filled, device
+    )
+    image_filled = utils.resize(image_filled, unet_input_shape)
 
-        cv2.imwrite("expand_region.png", expand_region)
-        cv2.imwrite("expand_mask.png", expand_mask)
-        cv2.imwrite("img_filled.png", image_filled)
+    cv2.imwrite("expand_region.png", expand_region)
+    cv2.imwrite("expand_mask.png", expand_mask)
+    cv2.imwrite("img_filled.png", image_filled)
 
-        neg_prompt = "worst quality, low quality, illustration, 3d, 2d, painting, cartoons, text, sketch, open mouth"
+    neg_prompt = "worst quality, low quality, illustration, 3d, 2d, painting, cartoons, text, sketch, open mouth"
 
-        result_image = utils.restore_from_mask(
-            pipe=pipeline,
-            init_images=[image_filled],
-            mask_images=[expand_mask],
-            prompts=[caption],
-            negative_prompts=[neg_prompt],
-            sampler=sampler,
-            num_inference_steps=num_inference_steps,
-            denoise_strength=denoise_strength,
-            guidance_scale=guidance_scale,
-        )[0]
+    result_image = utils.restore_from_mask(
+        pipe=pipeline,
+        init_images=[image_filled],
+        mask_images=[expand_mask],
+        prompts=[caption],
+        negative_prompts=[neg_prompt],
+        sampler=sampler,
+        num_inference_steps=num_inference_steps,
+        denoise_strength=denoise_strength,
+        guidance_scale=guidance_scale,
+    )[0]
 
-        result_image = utils.resize(result_image, [final_h, final_w])
-        cv2.imwrite("result.png", result_image)
-        return result_image
-    else:
-        return None
-
+    result_image = utils.resize(result_image, [final_h, final_w])
+    cv2.imwrite("result.png", result_image)
+    return result_image
 
 
 with gr.Blocks() as demo:
@@ -135,8 +130,8 @@ with gr.Blocks() as demo:
     with gr.Row():
         with gr.Column():
             with gr.Tabs() as tabs:
-                with gr.Tab("Sketch"):
-                    img_with_mask_sketch = gr.ImageEditor(
+                with gr.Tab("Inpaint Mode"):
+                    img_with_mask = gr.ImageEditor(
                         label="Image for inpainting with mask",
                         sources=["upload"],
                         type="numpy",
@@ -145,22 +140,14 @@ with gr.Blocks() as demo:
                         eraser=gr.Eraser(),
                         layers=False,
                     )
-                with gr.Tab("Detect"):
-                    img_with_mask_detect = gr.Image(
+                
+                with gr.Tab("Upload Mode"):
+                    img_upload = gr.Image(
                         label="Upload image",
-                        type="pil",
+                        sources=["upload"],
+                        type="numpy",
                         image_mode="RGB"
                     )
-                    detected_classes = gr.Textbox(
-                        label="Detected Classes",
-                        interactive=False
-                    )
-                    selected_classes = gr.Dropdown(
-                        label="Select Classes to Mask",
-                        choices=[],
-                        multiselect=True
-                    )
-            
             expand_direction = gr.Radio(
                 label="Direction to expand image", choices=["Left", "Right"]
             )
@@ -201,8 +188,7 @@ with gr.Blocks() as demo:
     submit.click(
         fn=process_image,
         inputs=[
-            img_with_mask_sketch.select("image"), # Get only the image component
-            img_with_mask_detect.select("image"), # Get only the image component
+            img_with_mask,
             expand_direction,
             expand_pixels,
             prompt,
@@ -210,9 +196,9 @@ with gr.Blocks() as demo:
             num_inference_steps,
             guidance_scale,
             denoise_strength,
-            sampler
+            sampler,
         ],
-        outputs=output
+        outputs=output,
     )
 
 if __name__ == "__main__":
