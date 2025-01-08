@@ -154,7 +154,13 @@ def update_mask(image, selected_class_idx):
     mask = create_mask_for_class(image, stored_masks, selected_class_idx)
     masked_region = apply_mask_to_image(image, mask)
     return mask, masked_region
-
+css = """
+#image-editor {
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+}
+"""
 with gr.Blocks() as demo:
     gr.Markdown("# Stable Diffusion Inpainting Demo")
     with gr.Row():
@@ -171,6 +177,8 @@ with gr.Blocks() as demo:
                         layers=False,
                         height=512,
                         width=512,
+                        transforms=[],
+                        elem_id="image-editor" 
                     )
                 
                 with gr.Tab("Upload Mode"):
