@@ -46,7 +46,7 @@ def init_models(args):
     opts["pix2pix"] = pix2pix_opts
     opts["sd"] = sd_pipeline_opts
     opts["blip"] = blip_opts
-    opts["device"] = pix2pix_opts["model"]
+    opts["device"] = args.device
 
     pix2pix_model = Pix2PixModel(opts["pix2pix"])
     pipeline = utils.get_sd_pipeline(opts["sd"]["model_id"], opts["sd"]["seed"])
