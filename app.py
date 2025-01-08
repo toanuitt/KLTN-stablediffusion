@@ -8,6 +8,7 @@ import cv2
 
 from src.model import Pix2PixModel
 from src import utils
+from src.segmentation import get_segmentation_masks, create_mask_for_class
 
 
 def get_args():
@@ -128,6 +129,20 @@ def process_image(
         return result_image
     else:
         return img_upload
+    
+stored_masks = []
+
+def detect_objects(image):
+    global stored_masks
+    classes, masks = get_segmentation_masks(image)
+    stored_masks = masks
+    return gr.Dropdown(choices=classes)
+
+def update_mask(image, selected_class_idx):
+    if selected_class_idx is None:
+        return None
+    mask = create_mask_for_class(image, stored_masks, selected_class_idx)
+    return mask
 
 with gr.Blocks() as demo:
     gr.Markdown("# Stable Diffusion Inpainting Demo")
@@ -149,6 +164,17 @@ with gr.Blocks() as demo:
                     img_upload = gr.Image(
                         label="Upload image",
                         sources=["upload"],
+                        type="numpy",
+                        image_mode="RGB"
+                    )
+                    detect_btn = gr.Button("Detect Objects")
+                    class_dropdown = gr.Dropdown(
+                        label="Select object to mask",
+                        choices=[],
+                        type="index"
+                    )
+                    mask_output = gr.Image(
+                        label="Generated Mask",
                         type="numpy",
                         image_mode="RGB"
                     )
@@ -188,7 +214,17 @@ with gr.Blocks() as demo:
             submit = gr.Button("Generate")
         with gr.Column():
             output = gr.Image(label="Result")
+    detect_btn.click(
+        fn=detect_objects,
+        inputs=[img_upload],
+        outputs=[class_dropdown]
+    )
 
+    class_dropdown.change(
+        fn=update_mask,
+        inputs=[img_upload, class_dropdown],
+        outputs=[mask_output]
+    )
     submit.click(
         fn=process_image,
         inputs=[
