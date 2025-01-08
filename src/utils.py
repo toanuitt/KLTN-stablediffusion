@@ -107,6 +107,8 @@ def fill_img(img, mask, expand_direction, expand_pixels):
 
 def get_object_image(image, mask):
     mask_inv = ~mask
+    print(image.shape)
+    print(mask_inv.shape)
     return cv2.bitwise_or(image, mask_inv)
 
 

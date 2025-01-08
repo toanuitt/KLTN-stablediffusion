@@ -103,6 +103,8 @@ def process_image(
             blip_model, blip_proccessor, object_image, device
         )
 
+    print(prompt)
+
     image_filled = utils.fill_img(image, mask, expand_direction, expand_pixels)
     image_filled = utils.resize(image_filled, unet_input_shape)
 
