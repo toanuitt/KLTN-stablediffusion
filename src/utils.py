@@ -202,6 +202,10 @@ def restore_from_mask(
 
     object_images = np.array(object_images)
 
+    print(f"{type(init_images)=}")
+    print(f"{type(mask_images)=}")
+    print(f"{type(object_images)=}")
+
     with torch.inference_mode():
         if len(object_images) == 0:
             outputs = pipe(
