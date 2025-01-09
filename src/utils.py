@@ -215,10 +215,6 @@ def restore_from_mask(
             .cuda()
         )
 
-    print(init_images)
-    print(mask_images)
-    print(object_images)
-
     with torch.inference_mode():
         if len(object_images) == 0:
             outputs = pipe(
@@ -247,6 +243,7 @@ def restore_from_mask(
     torch.cuda.empty_cache()
 
     images = []
+    print(outputs[0])
     for image in outputs:
         image = (image * 255).astype(np.uint8)
         image = cv2.cvtColor(image, cv2.COLOR_RGB2BGR)
