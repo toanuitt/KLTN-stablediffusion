@@ -58,7 +58,7 @@ def init_models(args):
         opts["device"] = f"cuda:{args.device}"
 
     pix2pix_model = Pix2PixModel(opts["pix2pix"])
-    pipeline = utils.get_sd_pipeline(opts["sd"]["model_id"], opts["sd"]["seed"])
+    pipeline = utils.get_sd_pipeline(opts["sd"])
     blip_model, blip_proccessor = utils.get_blip(opts["blip"]["model_id"])
 
     pipeline.to(opts["device"])
@@ -103,7 +103,7 @@ def process_image_mask(
     expand_mask = utils.resize(expand_mask, unet_input_shape)
     _, expand_mask = cv2.threshold(expand_mask, 128, 255, 0)
 
-    object_image = utils.get_object_image(image, mask)
+    object_image = utils.get_object_focus_image(image, mask)
 
     if prompt == "":
         prompt = utils.generate_image_caption(
@@ -119,6 +119,11 @@ def process_image_mask(
     cv2.imwrite("img_filled.png", image_filled)
     cv2.imwrite("object_image.png", object_image)
 
+    if opts["ip_adapter_id"] is None:
+        object_images = []
+    else:
+        object_images = [object_image]
+
     image_filled = utils.resize(image_filled, unet_input_shape)
     image_filled = image_filled.astype(np.float16) / 255.0
 
@@ -129,6 +134,7 @@ def process_image_mask(
         mask_images=[expand_mask],
         prompts=[prompt],
         negative_prompts=[negative_prompt],
+        object_images=object_images,
         sampler=sampler,
         num_inference_steps=num_inference_steps,
         denoise_strength=denoise_strength,

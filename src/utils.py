@@ -111,37 +111,43 @@ def get_object_image(image, mask):
     return cv2.bitwise_or(image, mask_inv)
 
 
+def get_object_focus_image(image, mask):
+    object_image = get_object_image(image, mask)
+    mask_h, mask_w = mask.shape[:2]
+
+    binary_mask = mask[mask == 255].copy()
+    start_w, end_w = -1, -1
+    for row in range(mask_w):
+        if np.any(binary_mask[:, row]) and start_w == -1:
+            start_w = row
+        if not np.all(binary_mask[:, row]) and start_w != -1:
+            end_w = row
+            break
+
+    start_h, end_h = -1, -1
+    for col in range(mask_h):
+        if np.any(binary_mask[col, :]) and start_h == -1:
+            start_h = col
+        if not np.all(binary_mask[col, :]) and start_h != -1:
+            end_h = col
+            break
+
+    object_image = image[start_h:end_h, start_w:end_w].copy()
+    return object_image
+
+
 def restore_from_mask(
     pipe,
     init_images,
     mask_images,
     prompts=[],
     negative_prompts=[],
+    object_images=[],
     num_inference_steps=30,
     guidance_scale=7.5,
     denoise_strength=0.75,
     sampler="euler",
 ):
-    """
-    Restore an image using stable diffusion inpainting with customizable parameters.
-
-    Args:
-        cropped_image (PIL.Image): The input image to be restored
-        mask_image (PIL.Image): The mask indicating areas to be inpainted
-        prompt (str): Text prompt for guided generation
-        negative_prompt (str): Text prompt for what to avoid in generation
-        num_inference_steps (int): Number of denoising steps
-        guidance_scale (float): How strongly the image should conform to prompt (CFG scale)
-        seed (int, optional): Random seed for reproducibility
-        denoise_strength (float): Strength of denoising, between 0.0 and 1.0
-        sampler (str): Sampling method to use ('euler_a', 'euler', 'heun', 'dpm_2',
-                       'dpm_2_ancestral', 'lms', 'ddim', 'pndm')
-
-    Returns:
-        PIL.Image: The restored image
-    """
-
-    # Set device and optimize memory
     torch.cuda.empty_cache()
     pipe.enable_attention_slicing()
 
@@ -185,16 +191,29 @@ def restore_from_mask(
         )
 
     with torch.inference_mode():
-        outputs = pipe(
-            prompt=prompts,
-            negative_prompt=negative_prompts,
-            image=init_images,
-            mask_image=mask_images,
-            guidance_scale=guidance_scale,
-            num_inference_steps=num_inference_steps,
-            output_type="np",
-            strength=denoise_strength,
-        ).images
+        if len(object_images) == 0:
+            outputs = pipe(
+                prompt=prompts,
+                negative_prompt=negative_prompts,
+                image=init_images,
+                mask_image=mask_images,
+                guidance_scale=guidance_scale,
+                num_inference_steps=num_inference_steps,
+                output_type="np",
+                strength=denoise_strength,
+            ).images
+        else:
+            outputs = pipe(
+                prompt=prompts,
+                negative_prompt=negative_prompts,
+                image=init_images,
+                mask_image=mask_images,
+                ip_adapter_image=object_images,
+                guidance_scale=guidance_scale,
+                num_inference_steps=num_inference_steps,
+                output_type="np",
+                strength=denoise_strength,
+            ).images
     torch.cuda.empty_cache()
 
     images = []
@@ -216,11 +235,13 @@ def generate_image_caption(model, processor, image, device):
     return caption
 
 
-def get_sd_pipeline(model_id, seed):
+def get_sd_pipeline(pipeline_opts):
     torch.cuda.empty_cache()
+    seed = pipeline_opts["seed"]
     if seed is not None:
         torch.manual_seed(seed)
 
+    model_id = pipeline_opts["model_id"]
     vae = AutoencoderKL.from_pretrained(model_id, subfolder="vae")
     tokenizer = CLIPTokenizer.from_pretrained(model_id, subfolder="tokenizer")
     text_encoder = CLIPTextModel.from_pretrained(
@@ -237,6 +258,17 @@ def get_sd_pipeline(model_id, seed):
         torch_dtype=torch.float16,
         safety_checker=None,
     )
+
+    ip_adapter_id = pipeline_opts["ip_adapter_id"]
+    if ip_adapter_id is not None:
+        pipe.load_ip_adapter(
+            "h94/IP-Adapter",
+            subfolder="models",
+            weight_name=ip_adapter_id,
+            image_encoder_folder="models/image_encoder",
+        )
+        pipe.set_ip_adapter_scale(0.5)
+
     return pipe
 
 
