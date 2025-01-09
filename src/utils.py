@@ -218,18 +218,19 @@ def restore_from_mask(
         )
 
     with torch.inference_mode():
-        if len(object_images) == 0:
+        if isinstance(pipe, StableDiffusionInpaintPipeline):
             outputs = pipe(
                 prompt=prompts,
                 negative_prompt=negative_prompts,
                 image=init_images,
                 mask_image=mask_images,
+                ip_adapter_image=ip_image,
                 guidance_scale=guidance_scale,
                 num_inference_steps=num_inference_steps,
                 output_type="np",
                 strength=denoise_strength,
             ).images
-        else:
+        elif isinstance(pipe, StableDiffusionControlNetInpaintPipeline):
             outputs = pipe(
                 prompt=prompts,
                 negative_prompt=negative_prompts,
