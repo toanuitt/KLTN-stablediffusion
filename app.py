@@ -117,6 +117,7 @@ def process_image_mask(
     cv2.imwrite("expand_region.png", expand_region)
     cv2.imwrite("expand_mask.png", expand_mask)
     cv2.imwrite("img_filled.png", image_filled)
+    cv2.imwrite("object_image.png", object_image)
 
     image_filled = utils.resize(image_filled, unet_input_shape)
 

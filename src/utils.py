@@ -220,25 +220,7 @@ def restore_from_mask(
 
 
 def generate_image_caption(model, processor, image, device):
-    # Ensure mask and image have same dimensions
-    if mask.shape != image.shape[:2]:
-        mask_pil = Image.fromarray(mask)
-        mask_resized = mask_pil.resize(
-            (image.shape[1], image.shape[0]), Image.NEAREST
-        )
-        mask = np.array(mask_resized)
-
-    # Create 3-channel mask if needed
-    if len(mask.shape) == 2:
-        mask = mask[:, :, np.newaxis]
-        mask = np.repeat(mask, 3, axis=2)
-
-    # Extract masked region
-    masked_image = image.copy()
-    masked_image[mask == 0] = 0  # Zero out non-masked regions
-
-    # Process masked region
-    inputs = processor(masked_image, return_tensors="pt").to(device)
+    inputs = processor(image, return_tensors="pt").to(device)
     outputs = model.generate(
         **inputs,
         max_new_tokens=512,
