@@ -126,6 +126,7 @@ def process_image_mask(
     return result_image
 def process_image_yolo(
     img_upload,
+    mask,
     expand_direction,
     expand_pixels,
     prompt,
@@ -135,7 +136,7 @@ def process_image_yolo(
     denoise_strength,
     sampler,
 ):
-    mask_output = mask_output
+    mask_output = mask
     cv2.imwrite("result.png", mask_output)
     return img_upload
     
@@ -221,7 +222,8 @@ with gr.Blocks() as demo:
     submit_upload.click(
         fn=process_image_yolo,
          inputs=[
-            img_upload,  
+            img_upload,
+            mask_output,  
             *upload_controls,  
         ],
         outputs=output,
