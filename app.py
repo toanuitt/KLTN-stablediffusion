@@ -130,7 +130,7 @@ def process_image_mask(
     result_image = utils.restore_from_mask(
         pipe=pipeline,
         init_images=[image_filled],
-        mask_images=[expand_mask],
+        mask_images=[expand_mask.astype(np.float16)],
         prompts=[prompt],
         negative_prompts=[negative_prompt],
         object_images=object_images,
