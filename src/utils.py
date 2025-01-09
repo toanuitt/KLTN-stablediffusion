@@ -1,7 +1,6 @@
 import cv2
 import numpy as np
 import torch
-from PIL import Image
 
 from diffusers import (
     StableDiffusionInpaintPipeline,
@@ -101,8 +100,8 @@ def fill_img(img, mask, expand_direction, expand_pixels):
         new_img[:, :expand_pixels] = average_color
         new_img[:, expand_pixels:] = img
     elif expand_direction.lower() == "right":
-        new_img[:, old_h:] = average_color
-        new_img[:, :old_h] = img
+        new_img[:, old_w:] = average_color
+        new_img[:, :old_w] = img
 
     return new_img
 
@@ -146,13 +145,7 @@ def restore_from_mask(
     torch.cuda.empty_cache()
     pipe.enable_attention_slicing()
 
-    if sampler == "euler_a":
-        from diffusers import EulerAncestralDiscreteScheduler
-
-        pipe.scheduler = EulerAncestralDiscreteScheduler.from_config(
-            pipe.scheduler.config
-        )
-    elif sampler == "euler":
+    if sampler == "euler":
         from diffusers import EulerDiscreteScheduler
 
         pipe.scheduler = EulerDiscreteScheduler.from_config(
@@ -168,12 +161,6 @@ def restore_from_mask(
         from diffusers import KDPM2DiscreteScheduler
 
         pipe.scheduler = KDPM2DiscreteScheduler.from_config(
-            pipe.scheduler.config
-        )
-    elif sampler == "dpm_2_ancestral":
-        from diffusers import KDPM2AncestralDiscreteScheduler
-
-        pipe.scheduler = KDPM2AncestralDiscreteScheduler.from_config(
             pipe.scheduler.config
         )
     elif sampler == "lms":
@@ -219,30 +206,15 @@ def restore_from_mask(
     return images
 
 
-def generate_image_caption(model, processor, image, mask, device):
-    # Ensure mask and image have same dimensions
-    if mask.shape != image.shape[:2]:
-        mask_pil = Image.fromarray(mask)
-        mask_resized = mask_pil.resize((image.shape[1], image.shape[0]), Image.NEAREST)
-        mask = np.array(mask_resized)
-
-    # Create 3-channel mask if needed
-    if len(mask.shape) == 2:
-        mask = mask[:, :, np.newaxis]
-        mask = np.repeat(mask, 3, axis=2)
-
-    # Extract masked region
-    masked_image = image.copy()
-    masked_image[mask == 0] = 0  # Zero out non-masked regions
-    
-    # Process masked region
-    inputs = processor(masked_image, return_tensors="pt").to(device)
+def generate_image_caption(model, processor, image, device):
+    inputs = processor(image, return_tensors="pt").to(device)
     outputs = model.generate(
         **inputs,
         max_new_tokens=512,
     )
     caption = processor.decode(outputs[0], skip_special_tokens=True)
     return caption
+
 
 def get_sd_pipeline(model_id, seed):
     torch.cuda.empty_cache()

@@ -107,22 +107,20 @@ def process_image_mask(
 
     if prompt == "":
         prompt = utils.generate_image_caption(
-            blip_model, blip_proccessor, object_image, device
+            blip_model, blip_proccessor, object_image, opts["device"]
         )
 
     print(prompt)
 
     image_filled = utils.fill_img(image, mask, expand_direction, expand_pixels)
-    if prompt == "":
-        prompt = utils.generate_image_caption(
-            blip_model, blip_proccessor, image_filled, mask, opts["device"]
-        )
 
     cv2.imwrite("expand_region.png", expand_region)
     cv2.imwrite("expand_mask.png", expand_mask)
     cv2.imwrite("img_filled.png", image_filled)
+    cv2.imwrite("object_image.png", object_image)
 
     image_filled = utils.resize(image_filled, unet_input_shape)
+    image_filled = image_filled.astype(np.float16) / 255.0
 
     negative_prompt = negative_prompt + opts["blip"]["default_negative_prompt"]
     result_image = utils.restore_from_mask(
@@ -139,7 +137,7 @@ def process_image_mask(
 
     result_image = utils.resize(result_image, [final_h, final_w])
     cv2.imwrite("result.png", result_image)
-    return result_image
+    return cv2.cvtColor(result_image, cv2.COLOR_BGR2RGB)
 
 
 def process_image_yolo(
