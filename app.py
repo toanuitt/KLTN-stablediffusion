@@ -104,7 +104,6 @@ def process_image_mask(
     _, expand_mask = cv2.threshold(expand_mask, 128, 255, 0)
 
     object_image = utils.get_object_focus_image(image, mask)
-    print(object_image.shape)
     if prompt == "":
         prompt = utils.generate_image_caption(
             blip_model, blip_proccessor, object_image, opts["device"]
@@ -122,9 +121,7 @@ def process_image_mask(
     if opts["sd"]["ip_adapter_id"] is None:
         object_images = []
     else:
-        object_images = [object_image]
-
-    print(object_images)
+        object_images = [object_image.astype(np.float16)]
 
     image_filled = utils.resize(image_filled, unet_input_shape)
     image_filled = image_filled.astype(np.float16) / 255.0
