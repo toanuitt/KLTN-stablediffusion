@@ -3,7 +3,7 @@ def create_control_elements():
     expand_direction = gr.Radio(
         label="Direction to expand image", 
         choices=["Left", "Right"],
-        value="left",
+        value="Left",
     )
     expand_pixels = gr.Number(
         label="Number of pixels to expand",
