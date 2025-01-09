@@ -120,7 +120,11 @@ def get_object_focus_image(image, mask):
     for row in range(mask_w):
         if np.any(binary_mask[:, row]) and start_w == -1:
             start_w = row
-        if not np.all(binary_mask[:, row]) and start_w != -1:
+        if (
+            not np.all(binary_mask[col, :])
+            and not np.any(binary_mask[col, :])
+            and start_w != -1
+        ):
             end_w = row
             break
 
@@ -128,11 +132,15 @@ def get_object_focus_image(image, mask):
     for col in range(mask_h):
         if np.any(binary_mask[col, :]) and start_h == -1:
             start_h = col
-        if not np.all(binary_mask[col, :]) and start_h != -1:
+        if (
+            not np.all(binary_mask[col, :])
+            and not np.any(binary_mask[col, :])
+            and start_h != -1
+        ):
             end_h = col
             break
 
-    object_image = image[start_h:end_h, start_w:end_w].copy()
+    object_image = object_image[start_h:end_h, start_w:end_w].copy()
     return object_image
 
 
