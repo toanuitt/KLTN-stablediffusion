@@ -2,14 +2,28 @@ import numpy as np
 import cv2
 from ultralytics import YOLO
 import gradio as gr
-model = YOLO('yolo11x-seg.pt')
+import yaml
 
-# Define allowed classes
-ALLOWED_CLASSES = {'apple', 'bird', 'dog', 'cat', 'car', 'airplane', 'giraffe', 'sheep', 'train'}
+# Load config
+def load_config():
+    with open('config/yolo11x_config.yaml', 'r') as f:
+        return yaml.safe_load(f)
+
+# Load configuration
+config = load_config()
+
+# Initialize model with config
+model = YOLO(config['model']['weights'])
+
+# Get allowed classes from config
+ALLOWED_CLASSES = set(config['classes']['allowed'])
 
 def get_segmentation_masks(image):
     height, width = image.shape[:2]
-    results = model(image, stream=True)
+    results = model(image, 
+                   conf=config['model']['confidence'],
+                   iou=config['model']['iou'],
+                   stream=True)
     class_instances = []
     masks = []
     
