@@ -223,7 +223,7 @@ with gr.Blocks() as demo:
         fn=process_image_yolo,
          inputs=[
             img_upload,  
-            *inpaint_controls,  
+            *upload_controls,  
         ],
         outputs=output,
     )
