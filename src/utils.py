@@ -266,6 +266,9 @@ def get_sd_pipeline(pipeline_opts):
             subfolder="models",
             weight_name=ip_adapter_id,
             image_encoder_folder="models/image_encoder",
+            torch_dtype=torch.float16,
+            low_cpu_mem_usage=False,
+            ignore_mismatched_sizes=True,
         )
         pipe.set_ip_adapter_scale(0.5)
 
