@@ -121,8 +121,8 @@ def get_object_focus_image(image, mask):
         if np.any(binary_mask[:, row]) and start_w == -1:
             start_w = row
         if (
-            not np.all(binary_mask[row, :])
-            and not np.any(binary_mask[row, :])
+            not np.all(binary_mask[:, row])
+            and not np.any(binary_mask[:, row])
             and start_w != -1
         ):
             end_w = row
