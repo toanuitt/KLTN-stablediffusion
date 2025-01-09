@@ -234,7 +234,7 @@ def restore_from_mask(
                 image=init_images,
                 mask_image=mask_images,
                 control_image=object_images,
-                # ip_adapter_image=object_images,
+                ip_adapter_image=object_images,
                 controlnet_conditioning_scale=0.9,
                 control_guidance_end=0.9,
                 guidance_scale=guidance_scale,
@@ -311,15 +311,15 @@ def get_sd_pipeline(pipeline_opts):
         )
 
     ip_adapter_id = pipeline_opts["ip_adapter_id"]
-    # if ip_adapter_id is not None:
-    #     pipe.load_ip_adapter(
-    #         "h94/IP-Adapter",
-    #         subfolder="models",
-    #         weight_name=[ip_adapter_id],
-    #         image_encoder_folder="models/image_encoder",
-    #         torch_dtype=torch.float16,
-    #     )
-    #     pipe.set_ip_adapter_scale(0.5)
+    if ip_adapter_id is not None:
+        pipe.load_ip_adapter(
+            "h94/IP-Adapter",
+            subfolder="models",
+            weight_name=[ip_adapter_id],
+            image_encoder_folder="models/image_encoder",
+            torch_dtype=torch.float16,
+        )
+        pipe.set_ip_adapter_scale(0.5)
 
     return pipe
 
