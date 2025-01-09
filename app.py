@@ -155,9 +155,9 @@ with gr.Blocks() as demo:
     with gr.Row():
         with gr.Column():
             with gr.Tabs() as tabs:
-                with gr.Tab("Inpaint Mode") :
+                with gr.Tab("FlexMask Inpaint") :
                     img_with_mask = gr.ImageEditor(
-                        label="Image for inpainting with mask",
+                        label="Upload image",
                         sources=["upload"],
                         type="numpy",
                         image_mode="RGB",
@@ -170,10 +170,10 @@ with gr.Blocks() as demo:
                         elem_id="image-editor" 
                     )
                     inpaint_controls = create_control_elements()
-                    submit_inpaint = gr.Button("Generate (Inpaint)")
+                    submit_inpaint = gr.Button("Generate (FlexMask)")
 
                 
-                with gr.Tab("Upload Mode"):
+                with gr.Tab("YOLODraw Inpaint"):
                     img_upload = gr.Image(
                         label="Upload image",
                         sources=["upload"],
@@ -182,12 +182,12 @@ with gr.Blocks() as demo:
                     )
                     detect_btn = gr.Button("Detect Objects")
                     class_dropdown = gr.Dropdown(
-                        label="Select object to mask",
+                        label="Select object",
                         choices=[],
                         type="index"
                     )
                     mask_output = gr.Image(
-                        label="Generated Mask",
+                        label="Masked Image",
                         type="numpy",
                         image_mode="RGB"
                     )
@@ -197,7 +197,7 @@ with gr.Blocks() as demo:
                             image_mode="RGB"
                         )
                     upload_controls = create_control_elements()
-                    submit_upload = gr.Button("Generate (Upload)")
+                    submit_upload = gr.Button("Generate (YOLODraw)")
         with gr.Column():
             output = gr.Image(label="Result")
     detect_btn.click(
