@@ -274,12 +274,16 @@ def get_sd_pipeline(pipeline_opts):
         torch.manual_seed(seed)
 
     model_id = pipeline_opts["model_id"]
-    vae = AutoencoderKL.from_pretrained(model_id, subfolder="vae")
+    vae = AutoencoderKL.from_pretrained(
+        model_id, subfolder="vae", torch_dtype=torch.float16
+    )
     tokenizer = CLIPTokenizer.from_pretrained(model_id, subfolder="tokenizer")
     text_encoder = CLIPTextModel.from_pretrained(
         model_id, subfolder="text_encoder"
     )
-    unet = UNet2DConditionModel.from_pretrained(model_id, subfolder="unet")
+    unet = UNet2DConditionModel.from_pretrained(
+        model_id, subfolder="unet", torch_dtype=torch.float16
+    )
 
     if pipeline_opts["controlnet_id"] is not None:
         controlnet = ControlNetModel.from_pretrained(
