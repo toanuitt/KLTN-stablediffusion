@@ -3,9 +3,11 @@ import numpy as np
 import torch
 
 from diffusers import (
-    StableDiffusionInpaintPipeline,
+    StableDiffusionControlNetInpaintPipeline,
+    StableDiffusionInpaintPipeline
     AutoencoderKL,
     UNet2DConditionModel,
+    ControlNetModel,
 )
 from transformers import (
     CLIPTextModel,
@@ -259,15 +261,33 @@ def get_sd_pipeline(pipeline_opts):
     )
     unet = UNet2DConditionModel.from_pretrained(model_id, subfolder="unet")
 
-    pipe = StableDiffusionInpaintPipeline.from_pretrained(
-        model_id,
-        vae=vae,
-        text_encoder=text_encoder,
-        tokenizer=tokenizer,
-        unet=unet,
-        torch_dtype=torch.float16,
-        safety_checker=None,
-    )
+    if pipeline_opts["controlnet_id"] is not None:
+        controlnet = ControlNetModel.from_pretrained(
+            pipeline_opts["controlnet_id"],
+            subfolder="diffusion_sd15",
+            torch_dtype=torch.float16,
+        )
+
+        pipe = StableDiffusionControlNetInpaintPipeline.from_pretrained(
+            model_id,
+            vae=vae,
+            text_encoder=text_encoder,
+            tokenizer=tokenizer,
+            unet=unet,
+            controlnet=controlnet,
+            torch_dtype=torch.float16,
+            safety_checker=None,
+        )
+    else:
+        pipe = StableDiffusionInpaintPipeline.from_pretrained(
+            model_id,
+            vae=vae,
+            text_encoder=text_encoder,
+            tokenizer=tokenizer,
+            unet=unet,
+            torch_dtype=torch.float16,
+            safety_checker=None,
+        )
 
     ip_adapter_id = pipeline_opts["ip_adapter_id"]
     if ip_adapter_id is not None:
