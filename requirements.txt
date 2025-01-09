@@ -1,0 +1,6 @@
+ultralytics
+opencv-python
+pyyaml
+diffusers[torch]
+gradio==4.44.1
+scikit-fmm
