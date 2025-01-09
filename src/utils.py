@@ -160,7 +160,7 @@ def restore_from_mask(
     sampler="euler",
 ):
     torch.cuda.empty_cache()
-    pipe.enable_attention_slicing()
+    # pipe.enable_attention_slicing()
 
     if sampler == "euler":
         from diffusers import EulerDiscreteScheduler
@@ -210,7 +210,7 @@ def restore_from_mask(
         np.array(mask_images, dtype=np.float16)
     ).cuda()
     if len(object_images) > 0:
-        ip_images = [Image.fromarray(image) for image in object_images]
+        ip_image = Image.fromarray(object_images[0])
         object_images = [image / 255.0 for image in object_images]
         object_images = (
             torch.as_tensor(np.array(object_images, dtype=np.float16))
@@ -237,7 +237,7 @@ def restore_from_mask(
                 image=init_images,
                 mask_image=mask_images,
                 control_image=object_images,
-                ip_adapter_image=ip_images,
+                ip_adapter_image=ip_image,
                 controlnet_conditioning_scale=0.9,
                 control_guidance_end=0.9,
                 guidance_scale=guidance_scale,
