@@ -1,6 +1,8 @@
 import cv2
 import numpy as np
 import torch
+from PIL import Image
+
 from diffusers import (
     StableDiffusionInpaintPipeline,
     AutoencoderKL,
@@ -214,9 +216,6 @@ def restore_from_mask(
 def generate_image_caption(model, processor, image, mask, device):
     # Ensure mask and image have same dimensions
     if mask.shape != image.shape[:2]:
-        # Resize mask to match image dimensions
-        from PIL import Image
-        import numpy as np
         mask_pil = Image.fromarray(mask)
         mask_resized = mask_pil.resize((image.shape[1], image.shape[0]), Image.NEAREST)
         mask = np.array(mask_resized)
