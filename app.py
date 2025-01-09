@@ -50,6 +50,8 @@ def init_models(args):
 
     with open(args.yolo_model) as yolo_file:
         yolo_opts = yaml.safe_load(yolo_file)
+    
+    initialize_yolo(yolo_opts)
 
     opts = dict()
     opts["pix2pix"] = pix2pix_opts

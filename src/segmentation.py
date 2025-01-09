@@ -2,22 +2,17 @@ import numpy as np
 import cv2
 from ultralytics import YOLO
 import gradio as gr
-import yaml
 
 # Initialize with None - will be set from app.py
 model = None 
 ALLOWED_CLASSES = None
+config = None  # Will be set from app.py
 
-def load_config():
-    with open('config/yolo11.yaml', 'r') as f:
-        return yaml.safe_load(f)
-
-config = load_config()
-
-def initialize_yolo(config):
-    global model, ALLOWED_CLASSES
-    model = YOLO(config['model']['weights'])
-    ALLOWED_CLASSES = set(config['classes']['allowed'])
+def initialize_yolo(yolo_opts):
+    global model, ALLOWED_CLASSES, config
+    model = YOLO(yolo_opts['model']['weights'])
+    ALLOWED_CLASSES = set(yolo_opts['classes']['allowed'])
+    config = yolo_opts
 
 def get_segmentation_masks(image):
     height, width = image.shape[:2]
