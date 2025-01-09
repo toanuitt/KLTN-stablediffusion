@@ -160,7 +160,6 @@ def restore_from_mask(
     sampler="euler",
 ):
     torch.cuda.empty_cache()
-    # pipe.enable_attention_slicing()
 
     if sampler == "euler":
         from diffusers import EulerDiscreteScheduler
@@ -276,12 +275,12 @@ def get_sd_pipeline(pipeline_opts):
     vae = AutoencoderKL.from_pretrained(
         model_id, subfolder="vae", torch_dtype=torch.float16
     )
-    # tokenizer = CLIPTokenizer.from_pretrained(
-    #     model_id, subfolder="tokenizer", torch_dtype=torch.float16
-    # )
-    # text_encoder = CLIPTextModel.from_pretrained(
-    #     model_id, subfolder="text_encoder", torch_dtype=torch.float16
-    # )
+    tokenizer = CLIPTokenizer.from_pretrained(
+        model_id, subfolder="tokenizer", torch_dtype=torch.float16
+    )
+    text_encoder = CLIPTextModel.from_pretrained(
+        model_id, subfolder="text_encoder", torch_dtype=torch.float16
+    )
     unet = UNet2DConditionModel.from_pretrained(
         model_id, subfolder="unet", torch_dtype=torch.float16
     )
@@ -295,8 +294,8 @@ def get_sd_pipeline(pipeline_opts):
         pipe = StableDiffusionControlNetInpaintPipeline.from_pretrained(
             model_id,
             vae=vae,
-            # text_encoder=text_encoder,
-            # tokenizer=tokenizer,
+            text_encoder=text_encoder,
+            tokenizer=tokenizer,
             unet=unet,
             controlnet=controlnet,
             torch_dtype=torch.float16,
@@ -306,8 +305,8 @@ def get_sd_pipeline(pipeline_opts):
         pipe = StableDiffusionInpaintPipeline.from_pretrained(
             model_id,
             vae=vae,
-            # text_encoder=text_encoder,
-            # tokenizer=tokenizer,
+            text_encoder=text_encoder,
+            tokenizer=tokenizer,
             unet=unet,
             torch_dtype=torch.float16,
             safety_checker=None,
