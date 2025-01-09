@@ -24,7 +24,7 @@ def get_args():
         "--sd-pipeline-config", type=str, default="configs/sd_pipeline.yaml"
     )
     parser.add_argument("--blip-config", type=str, default="configs/blip.yaml")
-    parser.add_argument("--yolo-model", type=str, default="configs/yolo.yaml")
+    parser.add_argument("--yolo-model", type=str, default="configs/yolo11.yaml")
     parser.add_argument("--device", type=str, default="cpu")
     args = parser.parse_args()
     return args
@@ -68,6 +68,15 @@ def init_models(args):
 
     pipeline.to(opts["device"])
     blip_model.to(opts["device"])
+
+    # Load YOLO config and initialize segmentation
+    with open(args.yolo_model) as yolo_file:
+        yolo_opts = yaml.safe_load(yolo_file)
+    
+    # Initialize segmentation with config
+    initialize_yolo(yolo_opts)
+    
+    opts["yolo"] = yolo_opts
 
     return opts, pix2pix_model, pipeline, blip_model, blip_proccessor
 

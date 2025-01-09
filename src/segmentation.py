@@ -4,19 +4,20 @@ from ultralytics import YOLO
 import gradio as gr
 import yaml
 
-# Load config
+# Initialize with None - will be set from app.py
+model = None 
+ALLOWED_CLASSES = None
+
 def load_config():
-    with open('config/yolo11x_config.yaml', 'r') as f:
+    with open('config/yolo11.yaml', 'r') as f:
         return yaml.safe_load(f)
 
-# Load configuration
 config = load_config()
 
-# Initialize model with config
-model = YOLO(config['model']['weights'])
-
-# Get allowed classes from config
-ALLOWED_CLASSES = set(config['classes']['allowed'])
+def initialize_yolo(config):
+    global model, ALLOWED_CLASSES
+    model = YOLO(config['model']['weights'])
+    ALLOWED_CLASSES = set(config['classes']['allowed'])
 
 def get_segmentation_masks(image):
     height, width = image.shape[:2]
