@@ -224,6 +224,7 @@ def restore_from_mask(
                 negative_prompt=negative_prompts,
                 image=init_images,
                 mask_image=mask_images,
+                control_image=object_images,
                 ip_adapter_image=object_images,
                 guidance_scale=guidance_scale,
                 num_inference_steps=num_inference_steps,
