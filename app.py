@@ -71,15 +71,6 @@ def init_models(args):
     pipeline.to(opts["device"])
     blip_model.to(opts["device"])
 
-    # Load YOLO config and initialize segmentation
-    with open(args.yolo_model) as yolo_file:
-        yolo_opts = yaml.safe_load(yolo_file)
-    
-    # Initialize segmentation with config
-    initialize_yolo(yolo_opts)
-    
-    opts["yolo"] = yolo_opts
-
     return opts, pix2pix_model, pipeline, blip_model, blip_proccessor
 
 
