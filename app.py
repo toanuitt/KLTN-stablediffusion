@@ -107,16 +107,12 @@ def process_image_mask(
 
     if prompt == "":
         prompt = utils.generate_image_caption(
-            blip_model, blip_proccessor, object_image, device
+            blip_model, blip_proccessor, object_image, opts["device"]
         )
 
     print(prompt)
 
     image_filled = utils.fill_img(image, mask, expand_direction, expand_pixels)
-    if prompt == "":
-        prompt = utils.generate_image_caption(
-            blip_model, blip_proccessor, image_filled, mask, opts["device"]
-        )
 
     cv2.imwrite("expand_region.png", expand_region)
     cv2.imwrite("expand_mask.png", expand_mask)

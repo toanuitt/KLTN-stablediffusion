@@ -219,11 +219,13 @@ def restore_from_mask(
     return images
 
 
-def generate_image_caption(model, processor, image, mask, device):
+def generate_image_caption(model, processor, image, device):
     # Ensure mask and image have same dimensions
     if mask.shape != image.shape[:2]:
         mask_pil = Image.fromarray(mask)
-        mask_resized = mask_pil.resize((image.shape[1], image.shape[0]), Image.NEAREST)
+        mask_resized = mask_pil.resize(
+            (image.shape[1], image.shape[0]), Image.NEAREST
+        )
         mask = np.array(mask_resized)
 
     # Create 3-channel mask if needed
@@ -234,7 +236,7 @@ def generate_image_caption(model, processor, image, mask, device):
     # Extract masked region
     masked_image = image.copy()
     masked_image[mask == 0] = 0  # Zero out non-masked regions
-    
+
     # Process masked region
     inputs = processor(masked_image, return_tensors="pt").to(device)
     outputs = model.generate(
@@ -243,6 +245,7 @@ def generate_image_caption(model, processor, image, mask, device):
     )
     caption = processor.decode(outputs[0], skip_special_tokens=True)
     return caption
+
 
 def get_sd_pipeline(model_id, seed):
     torch.cuda.empty_cache()
