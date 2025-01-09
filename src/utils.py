@@ -217,6 +217,10 @@ def restore_from_mask(
             .cuda()
         )
 
+    print(init_images)
+    print(mask_images)
+    print(object_images)
+
     with torch.inference_mode():
         if len(object_images) == 0:
             outputs = pipe(
