@@ -279,7 +279,6 @@ def get_sd_pipeline(pipeline_opts):
             ignore_mismatched_sizes=True,
         )
         pipe.set_ip_adapter_scale(0.5)
-        pipe.enable_model_cpu_offload()
 
     return pipe
 

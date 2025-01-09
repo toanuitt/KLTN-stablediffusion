@@ -124,6 +124,8 @@ def process_image_mask(
     else:
         object_images = [object_image]
 
+    print(object_images)
+
     image_filled = utils.resize(image_filled, unet_input_shape)
     image_filled = image_filled.astype(np.float16) / 255.0
 
