@@ -207,10 +207,7 @@ def restore_from_mask(
         .cuda()
     )
     mask_images = (
-        torch.as_tensor(np.array(mask_images, dtype=np.float16))
-        .half()
-        .permute(2, 0, 1)
-        .cuda()
+        torch.as_tensor(np.array(mask_images, dtype=np.float16)).half().cuda()
     )
     if len(object_images) > 0:
         object_images = (
