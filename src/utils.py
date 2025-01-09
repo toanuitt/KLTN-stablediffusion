@@ -16,6 +16,7 @@ from transformers import (
     BlipForConditionalGeneration,
 )
 import skfmm
+from PIL import Image
 
 
 def resize(img, new_shape):
@@ -209,6 +210,8 @@ def restore_from_mask(
         np.array(mask_images, dtype=np.float16)
     ).cuda()
     if len(object_images) > 0:
+        ip_images = [Image.fromarray(image) for image in object_images]
+        object_images = [image / 255.0 for image in object_images]
         object_images = (
             torch.as_tensor(np.array(object_images, dtype=np.float16))
             .permute(0, 3, 1, 2)
