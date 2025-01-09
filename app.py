@@ -107,14 +107,14 @@ def process_image_mask(
     cv2.imwrite("expand_mask.png", expand_mask)
     cv2.imwrite("img_filled.png", image_filled)
 
-    neg_prompt = "worst quality, low quality, text, cartoon, illustration, anime, 3D render, unrealistic, CGI, sketch, abstract, painting, watermark, signature, logo, extra limbs, extra digits, bad anatomy, fused fingers, extra appendages, missing limbs, blurry, low resolution, grainy, noise, JPEG artifacts, overexposed, oversaturated, underexposed, surreal, unrealistic features, unnatural colors, distorted elements, disproportionate structures"
-
+    #neg_prompt = "worst quality, low quality, text, cartoon, illustration, anime, 3D render, unrealistic, CGI, sketch, abstract, painting, watermark, signature, logo, extra limbs, extra digits, bad anatomy, fused fingers, extra appendages, missing limbs, blurry, low resolution, grainy, noise, JPEG artifacts, overexposed, oversaturated, underexposed, surreal, unrealistic features, unnatural colors, distorted elements, disproportionate structures"
+    negative_prompt = negative_prompt + "text, cartoon, illustration, anime, 3D render, unrealistic, CGI, sketch, abstract, painting, watermark, signature, logo, extra limbs, extra digits, bad anatomy, fused fingers, extra appendages, missing limbs, blurry, low resolution, grainy, noise, JPEG artifacts, overexposed, oversaturated, underexposed, surreal, unrealistic features, unnatural colors, distorted elements, disproportionate structures"
     result_image = utils.restore_from_mask(
         pipe=pipeline,
         init_images=[image_filled],
         mask_images=[expand_mask],
         prompts=[caption],
-        negative_prompts=[neg_prompt],
+        negative_prompts=[negative_prompt],
         sampler=sampler,
         num_inference_steps=num_inference_steps,
         denoise_strength=denoise_strength,
