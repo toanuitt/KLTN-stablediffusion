@@ -1,1 +1,2 @@
 model_id: "your_blip_model_id"
+default_negative_prompt: "text, cartoon, illustration, anime, 3D render, unrealistic, CGI, sketch, abstract, painting, watermark, signature, logo, extra limbs, extra digits, bad anatomy, fused fingers, extra appendages, missing limbs, blurry, low resolution, grainy, noise, JPEG artifacts, overexposed, oversaturated, underexposed, surreal, unrealistic features, unnatural colors, distorted elements, disproportionate structures"

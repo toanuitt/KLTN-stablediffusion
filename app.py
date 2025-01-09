@@ -11,6 +11,10 @@ from src import utils
 from src.segmentation import *
 from src.button import create_control_elements
 
+
+opts = pix2pix_model = blip_model = blip_proccessor = pipeline = None
+
+
 def get_args():
     parser = argparse.ArgumentParser()
     parser.add_argument(
@@ -60,7 +64,7 @@ def init_models(args):
     pipeline.to(opts["device"])
     blip_model.to(opts["device"])
 
-    return pix2pix_model, pipeline, blip_model, blip_proccessor
+    return opts, pix2pix_model, pipeline, blip_model, blip_proccessor
 
 
 def process_image_mask(
@@ -74,6 +78,8 @@ def process_image_mask(
     denoise_strength,
     sampler,
 ):
+    global opts, pix2pix_model, pipeline, blip_model, blip_proccessor
+
     expand_pixels = int(expand_pixels)
     image = img_with_mask["background"]
     unet_input_shape = [512, 512]
@@ -98,22 +104,23 @@ def process_image_mask(
     _, expand_mask = cv2.threshold(expand_mask, 128, 255, 0)
 
     image_filled = utils.fill_img(image, mask, expand_direction, expand_pixels)
-    caption = utils.generate_image_caption(
-        blip_model, blip_proccessor, image_filled,mask, device
-    )
-    image_filled = utils.resize(image_filled, unet_input_shape)
+    if prompt == "":
+        prompt = utils.generate_image_caption(
+            blip_model, blip_proccessor, image_filled, mask, opts["device"]
+        )
 
     cv2.imwrite("expand_region.png", expand_region)
     cv2.imwrite("expand_mask.png", expand_mask)
     cv2.imwrite("img_filled.png", image_filled)
 
-    #neg_prompt = "worst quality, low quality, text, cartoon, illustration, anime, 3D render, unrealistic, CGI, sketch, abstract, painting, watermark, signature, logo, extra limbs, extra digits, bad anatomy, fused fingers, extra appendages, missing limbs, blurry, low resolution, grainy, noise, JPEG artifacts, overexposed, oversaturated, underexposed, surreal, unrealistic features, unnatural colors, distorted elements, disproportionate structures"
-    negative_prompt = negative_prompt + "text, cartoon, illustration, anime, 3D render, unrealistic, CGI, sketch, abstract, painting, watermark, signature, logo, extra limbs, extra digits, bad anatomy, fused fingers, extra appendages, missing limbs, blurry, low resolution, grainy, noise, JPEG artifacts, overexposed, oversaturated, underexposed, surreal, unrealistic features, unnatural colors, distorted elements, disproportionate structures"
+    image_filled = utils.resize(image_filled, unet_input_shape)
+
+    negative_prompt = negative_prompt + opts["blip"]["default_negative_prompt"]
     result_image = utils.restore_from_mask(
         pipe=pipeline,
         init_images=[image_filled],
         mask_images=[expand_mask],
-        prompts=[caption],
+        prompts=[prompt],
         negative_prompts=[negative_prompt],
         sampler=sampler,
         num_inference_steps=num_inference_steps,
@@ -124,6 +131,8 @@ def process_image_mask(
     result_image = utils.resize(result_image, [final_h, final_w])
     cv2.imwrite("result.png", result_image)
     return result_image
+
+
 def process_image_yolo(
     img_upload,
     mask,
@@ -139,7 +148,7 @@ def process_image_yolo(
     mask_output = mask
     cv2.imwrite("result.png", mask_output)
     return img_upload
-    
+
 
 stored_masks = []
 
@@ -155,7 +164,7 @@ with gr.Blocks() as demo:
     with gr.Row():
         with gr.Column():
             with gr.Tabs() as tabs:
-                with gr.Tab("FlexMask Inpaint") :
+                with gr.Tab("FlexMask Inpaint"):
                     img_with_mask = gr.ImageEditor(
                         label="Upload image",
                         sources=["upload"],
@@ -167,72 +176,62 @@ with gr.Blocks() as demo:
                         height=512,
                         width=1024,
                         transforms=[],
-                        elem_id="image-editor" 
+                        elem_id="image-editor",
                     )
                     inpaint_controls = create_control_elements()
                     submit_inpaint = gr.Button("Generate (FlexMask)")
 
-                
                 with gr.Tab("YOLODraw Inpaint"):
                     img_upload = gr.Image(
                         label="Upload image",
                         sources=["upload"],
                         type="numpy",
-                        image_mode="RGB"
+                        image_mode="RGB",
                     )
                     detect_btn = gr.Button("Detect Objects")
                     class_dropdown = gr.Dropdown(
-                        label="Select object",
-                        choices=[],
-                        type="index"
+                        label="Select object", choices=[], type="index"
                     )
                     mask_output = gr.Image(
-                        label="Masked Image",
-                        type="numpy",
-                        image_mode="RGB"
+                        label="Masked Image", type="numpy", image_mode="RGB"
                     )
                     masked_region = gr.Image(
-                            label="Masked Region",
-                            type="numpy",
-                            image_mode="RGB"
-                        )
+                        label="Masked Region", type="numpy", image_mode="RGB"
+                    )
                     upload_controls = create_control_elements()
                     submit_upload = gr.Button("Generate (YOLODraw)")
         with gr.Column():
             output = gr.Image(label="Result")
     detect_btn.click(
-        fn=detect_objects,
-        inputs=[img_upload],
-        outputs=[class_dropdown]
+        fn=detect_objects, inputs=[img_upload], outputs=[class_dropdown]
     )
 
     class_dropdown.change(
         fn=update_mask,
         inputs=[img_upload, class_dropdown],
-        outputs=[mask_output, masked_region]
+        outputs=[mask_output, masked_region],
     )
-    submit_inpaint .click(
+    submit_inpaint.click(
         fn=process_image_mask,
         inputs=[
-            img_with_mask,  
-            *inpaint_controls,  
+            img_with_mask,
+            *inpaint_controls,
         ],
         outputs=output,
-        )
+    )
     submit_upload.click(
         fn=process_image_yolo,
-         inputs=[
+        inputs=[
             img_upload,
-            mask_output,  
-            *upload_controls,  
+            mask_output,
+            *upload_controls,
         ],
         outputs=output,
     )
 
 if __name__ == "__main__":
     args = get_args()
-    pix2pix_model, pipeline, blip_model, blip_proccessor = init_models(args)
-    device = args.device
-    if device != "cpu":
-        device = f"cuda:{device}"
+    opts, pix2pix_model, pipeline, blip_model, blip_proccessor = init_models(
+        args
+    )
     demo.launch(share=True)
