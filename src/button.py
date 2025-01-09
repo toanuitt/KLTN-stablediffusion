@@ -16,9 +16,18 @@ def create_control_elements():
         label="Prompt", 
         placeholder="Enter your prompt here"
     )
+    def append_nevprompt(text):
+        prompt = "text, cartoon, illustration, anime, 3D render, unrealistic, CGI, sketch, abstract, painting, watermark, signature, logo, extra limbs, extra digits, bad anatomy, fused fingers, extra appendages, missing limbs, blurry, low resolution, grainy, noise, JPEG artifacts, overexposed, oversaturated, underexposed, surreal, unrealistic features, unnatural colors, distorted elements, disproportionate structures"
+        return f"{text} {prompt}" if text else f"{prompt}"
+
     negative_prompt = gr.Textbox(
         label="Negative Prompt",
         placeholder="Enter your negative prompt here",
+        value="",  # Default empty value
+        interactive=True,
+        elem_id="negative_prompt",
+        inputs=None,
+        fn=append_nevprompt
     )
     num_inference_steps = gr.Slider(
         minimum=1,
