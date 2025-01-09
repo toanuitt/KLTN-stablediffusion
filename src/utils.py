@@ -198,6 +198,8 @@ def restore_from_mask(
             algorithm_type="sde-dpmsolver++",
         )
 
+    object_images = np.array([object_images])
+
     with torch.inference_mode():
         if len(object_images) == 0:
             outputs = pipe(
@@ -216,7 +218,7 @@ def restore_from_mask(
                 negative_prompt=negative_prompts,
                 image=init_images,
                 mask_image=mask_images,
-                ip_adapter_image=[object_images],
+                ip_adapter_image=object_images,
                 guidance_scale=guidance_scale,
                 num_inference_steps=num_inference_steps,
                 output_type="np",
@@ -272,11 +274,9 @@ def get_sd_pipeline(pipeline_opts):
         pipe.load_ip_adapter(
             "h94/IP-Adapter",
             subfolder="models",
-            weight_name=ip_adapter_id,
+            weight_name=[ip_adapter_id],
             image_encoder_folder="models/image_encoder",
             torch_dtype=torch.float16,
-            low_cpu_mem_usage=False,
-            ignore_mismatched_sizes=True,
         )
         pipe.set_ip_adapter_scale(0.5)
 
