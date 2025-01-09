@@ -74,7 +74,6 @@ def process_image_mask(
     denoise_strength,
     sampler,
 ):
-    image = img_upload
     expand_pixels = int(expand_pixels)
     image = img_with_mask["background"]
     unet_input_shape = [512, 512]
