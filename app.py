@@ -9,7 +9,7 @@ import cv2
 from src.model import Pix2PixModel
 from src import utils
 from src.segmentation import *
-
+from src.button import create_control_elements
 
 def get_args():
     parser = argparse.ArgumentParser()
@@ -63,8 +63,69 @@ def init_models(args):
     return pix2pix_model, pipeline, blip_model, blip_proccessor
 
 
-def process_image(
+def process_image_mask(
     img_with_mask,
+    expand_direction,
+    expand_pixels,
+    prompt,
+    negative_prompt,
+    num_inference_steps,
+    guidance_scale,
+    denoise_strength,
+    sampler,
+):
+    image = img_upload
+    expand_pixels = int(expand_pixels)
+    image = img_with_mask["background"]
+    unet_input_shape = [512, 512]
+
+    mask = cv2.cvtColor(img_with_mask["layers"][0], cv2.COLOR_BGR2GRAY)
+    expand_mask = utils.get_expand_mask(mask, expand_direction, expand_pixels)
+
+    final_h, final_w = expand_mask.shape[:2]
+    expand_region = utils.get_expand_region(
+        image.shape[:2], expand_direction, expand_pixels
+    )
+    final_h, final_w = expand_mask.shape[:2]
+    data = utils.get_input(expand_mask, expand_region, [256, 256])
+    expand_sdf_map = pix2pix_model.predict(data)
+
+    complete_mask = utils.get_binary_mask(expand_sdf_map)
+    complete_mask = utils.resize(complete_mask, [final_h, final_w])
+    _, complete_mask = cv2.threshold(complete_mask, 128, 255, 0)
+
+    expand_mask = np.where(expand_region == 255, complete_mask, 0)
+    expand_mask = utils.resize(expand_mask, unet_input_shape)
+    _, expand_mask = cv2.threshold(expand_mask, 128, 255, 0)
+
+    image_filled = utils.fill_img(image, mask, expand_direction, expand_pixels)
+    caption = utils.generate_image_caption(
+        blip_model, blip_proccessor, image_filled, device
+    )
+    image_filled = utils.resize(image_filled, unet_input_shape)
+
+    cv2.imwrite("expand_region.png", expand_region)
+    cv2.imwrite("expand_mask.png", expand_mask)
+    cv2.imwrite("img_filled.png", image_filled)
+
+    neg_prompt = "worst quality, low quality, text, cartoon, illustration, anime, 3D render, unrealistic, CGI, sketch, abstract, painting, watermark, signature, logo, extra limbs, extra digits, bad anatomy, fused fingers, extra appendages, missing limbs, blurry, low resolution, grainy, noise, JPEG artifacts, overexposed, oversaturated, underexposed, surreal, unrealistic features, unnatural colors, distorted elements, disproportionate structures"
+
+    result_image = utils.restore_from_mask(
+        pipe=pipeline,
+        init_images=[image_filled],
+        mask_images=[expand_mask],
+        prompts=[caption],
+        negative_prompts=[neg_prompt],
+        sampler=sampler,
+        num_inference_steps=num_inference_steps,
+        denoise_strength=denoise_strength,
+        guidance_scale=guidance_scale,
+    )[0]
+
+    result_image = utils.resize(result_image, [final_h, final_w])
+    cv2.imwrite("result.png", result_image)
+    return result_image
+def process_image_yolo(
     img_upload,
     expand_direction,
     expand_pixels,
@@ -75,63 +136,11 @@ def process_image(
     denoise_strength,
     sampler,
 ):
-    if img_upload is None:
-        image = img_upload
-        expand_pixels = int(expand_pixels)
-        image = img_with_mask["background"]
-        unet_input_shape = [512, 512]
-
-        mask = cv2.cvtColor(img_with_mask["layers"][0], cv2.COLOR_BGR2GRAY)
-        expand_mask = utils.get_expand_mask(mask, expand_direction, expand_pixels)
-
-        final_h, final_w = expand_mask.shape[:2]
-        expand_region = utils.get_expand_region(
-            image.shape[:2], expand_direction, expand_pixels
-        )
-        final_h, final_w = expand_mask.shape[:2]
-        data = utils.get_input(expand_mask, expand_region, [256, 256])
-        expand_sdf_map = pix2pix_model.predict(data)
-
-        complete_mask = utils.get_binary_mask(expand_sdf_map)
-        complete_mask = utils.resize(complete_mask, [final_h, final_w])
-        _, complete_mask = cv2.threshold(complete_mask, 128, 255, 0)
-
-        expand_mask = np.where(expand_region == 255, complete_mask, 0)
-        expand_mask = utils.resize(expand_mask, unet_input_shape)
-        _, expand_mask = cv2.threshold(expand_mask, 128, 255, 0)
-
-        image_filled = utils.fill_img(image, mask, expand_direction, expand_pixels)
-        caption = utils.generate_image_caption(
-            blip_model, blip_proccessor, image_filled, device
-        )
-        image_filled = utils.resize(image_filled, unet_input_shape)
-
-        cv2.imwrite("expand_region.png", expand_region)
-        cv2.imwrite("expand_mask.png", expand_mask)
-        cv2.imwrite("img_filled.png", image_filled)
-
-        neg_prompt = "worst quality, low quality, text, cartoon, illustration, anime, 3D render, unrealistic, CGI, sketch, abstract, painting, watermark, signature, logo, extra limbs, extra digits, bad anatomy, fused fingers, extra appendages, missing limbs, blurry, low resolution, grainy, noise, JPEG artifacts, overexposed, oversaturated, underexposed, surreal, unrealistic features, unnatural colors, distorted elements, disproportionate structures"
-
-        result_image = utils.restore_from_mask(
-            pipe=pipeline,
-            init_images=[image_filled],
-            mask_images=[expand_mask],
-            prompts=[caption],
-            negative_prompts=[neg_prompt],
-            sampler=sampler,
-            num_inference_steps=num_inference_steps,
-            denoise_strength=denoise_strength,
-            guidance_scale=guidance_scale,
-        )[0]
-
-        result_image = utils.resize(result_image, [final_h, final_w])
-        cv2.imwrite("result.png", result_image)
-        return result_image
-    else:
-        mask_output = mask_output
-        cv2.imwrite("result.png", mask_output)
-        return img_upload
+    mask_output = mask_output
+    cv2.imwrite("result.png", mask_output)
+    return img_upload
     
+
 stored_masks = []
 
 css = """
@@ -160,6 +169,9 @@ with gr.Blocks() as demo:
                         transforms=[],
                         elem_id="image-editor" 
                     )
+                    inpaint_controls = create_control_elements()
+                    submit_inpaint = gr.Button("Generate (Inpaint)")
+
                 
                 with gr.Tab("Upload Mode"):
                     img_upload = gr.Image(
@@ -184,40 +196,8 @@ with gr.Blocks() as demo:
                             type="numpy",
                             image_mode="RGB"
                         )
-            expand_direction = gr.Radio(
-                label="Direction to expand image", choices=["Left", "Right"]
-            )
-            expand_pixels = gr.Number(
-                label="Number of pixels to expand",
-                minimum=0,
-                maximum=1024,
-                precision=0,
-            )
-            prompt = gr.Textbox(
-                label="Prompt", placeholder="Enter your prompt here"
-            )
-            negative_prompt = gr.Textbox(
-                label="Negative Prompt",
-                placeholder="Enter your negative prompt here",
-            )
-            num_inference_steps = gr.Slider(
-                minimum=1,
-                maximum=100,
-                value=30,
-                label="Number of Inference Steps",
-            )
-            guidance_scale = gr.Slider(
-                minimum=1.0, maximum=20.0, value=7.5, label="Guidance Scale"
-            )
-            denoise_strength = gr.Slider(
-                minimum=0.0, maximum=1.0, value=1.0, label="Denoise Strength"
-            )
-            sampler = gr.Dropdown(
-                choices=["euler", "plms", "ddim"],
-                label="Sampler",
-                value="euler",
-            )
-            submit = gr.Button("Generate")
+                    upload_controls = create_control_elements()
+                    submit_upload = gr.Button("Generate (Upload)")
         with gr.Column():
             output = gr.Image(label="Result")
     detect_btn.click(
@@ -231,19 +211,19 @@ with gr.Blocks() as demo:
         inputs=[img_upload, class_dropdown],
         outputs=[mask_output, masked_region]
     )
-    submit.click(
-        fn=process_image,
+    submit_inpaint .click(
+        fn=process_image_mask,
         inputs=[
-            img_with_mask,
-            img_upload,
-            expand_direction,
-            expand_pixels,
-            prompt,
-            negative_prompt,
-            num_inference_steps,
-            guidance_scale,
-            denoise_strength,
-            sampler,
+            img_with_mask,  
+            *inpaint_controls,  
+        ],
+        outputs=output,
+        )
+    submit_upload.click(
+        fn=process_image_yolo,
+         inputs=[
+            img_upload,  
+            *inpaint_controls,  
         ],
         outputs=output,
     )
