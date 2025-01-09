@@ -264,7 +264,6 @@ def get_sd_pipeline(pipeline_opts):
     if pipeline_opts["controlnet_id"] is not None:
         controlnet = ControlNetModel.from_pretrained(
             pipeline_opts["controlnet_id"],
-            subfolder="diffusion_sd15",
             torch_dtype=torch.float16,
         )
 
