@@ -101,6 +101,7 @@ def process_image_mask(
     caption = utils.generate_image_caption(
         blip_model, blip_proccessor, image_filled,mask, device
     )
+    print(caption)
     image_filled = utils.resize(image_filled, unet_input_shape)
 
     cv2.imwrite("expand_region.png", expand_region)
