@@ -200,11 +200,9 @@ def restore_from_mask(
             algorithm_type="sde-dpmsolver++",
         )
 
-    object_images = np.array(object_images)
-
-    print(f"{type(init_images)=}")
-    print(f"{type(mask_images)=}")
-    print(f"{type(object_images[0])=}")
+    init_images = np.array(init_images, dtype=np.float16)
+    mask_images = np.array(mask_images, dtype=np.float16)
+    object_images = np.array(object_images, dtype=np.float16)
 
     with torch.inference_mode():
         if len(object_images) == 0:
