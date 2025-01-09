@@ -120,6 +120,7 @@ def process_image_mask(
     cv2.imwrite("object_image.png", object_image)
 
     image_filled = utils.resize(image_filled, unet_input_shape)
+    image_filled = image_filled.astype(np.float16) / 255.0
 
     negative_prompt = negative_prompt + opts["blip"]["default_negative_prompt"]
     result_image = utils.restore_from_mask(
