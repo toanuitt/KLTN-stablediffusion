@@ -275,9 +275,11 @@ def get_sd_pipeline(pipeline_opts):
     vae = AutoencoderKL.from_pretrained(
         model_id, subfolder="vae", torch_dtype=torch.float16
     )
-    tokenizer = CLIPTokenizer.from_pretrained(model_id, subfolder="tokenizer")
+    tokenizer = CLIPTokenizer.from_pretrained(
+        model_id, subfolder="tokenizer", torch_dtype=torch.float16
+    )
     text_encoder = CLIPTextModel.from_pretrained(
-        model_id, subfolder="text_encoder"
+        model_id, subfolder="text_encoder", torch_dtype=torch.float16
     )
     unet = UNet2DConditionModel.from_pretrained(
         model_id, subfolder="unet", torch_dtype=torch.float16
