@@ -137,7 +137,7 @@ def process_image_mask(
 
     result_image = utils.resize(result_image, [final_h, final_w])
     cv2.imwrite("result.png", result_image)
-    return result_image
+    return cv2.cvtColor(result_image, cv2.COLOR_BGR2RGB)
 
 
 def process_image_yolo(
