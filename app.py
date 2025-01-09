@@ -104,7 +104,7 @@ def process_image_mask(
     _, expand_mask = cv2.threshold(expand_mask, 128, 255, 0)
 
     object_image = utils.get_object_focus_image(image, mask)
-
+    print(object_image.shape)
     if prompt == "":
         prompt = utils.generate_image_caption(
             blip_model, blip_proccessor, object_image, opts["device"]
