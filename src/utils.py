@@ -107,6 +107,11 @@ def fill_img(img, mask, expand_direction, expand_pixels):
     return new_img
 
 
+def get_object_image(image, mask):
+    mask_inv = cv2.cvtColor(~mask, cv2.COLOR_GRAY2BGR)
+    return cv2.bitwise_or(image, mask_inv)
+
+
 def restore_from_mask(
     pipe,
     init_images,
@@ -201,6 +206,7 @@ def restore_from_mask(
             guidance_scale=guidance_scale,
             num_inference_steps=num_inference_steps,
             output_type="np",
+            strength=denoise_strength,
         ).images
     torch.cuda.empty_cache()
 

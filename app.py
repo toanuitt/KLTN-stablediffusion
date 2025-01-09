@@ -103,6 +103,15 @@ def process_image_mask(
     expand_mask = utils.resize(expand_mask, unet_input_shape)
     _, expand_mask = cv2.threshold(expand_mask, 128, 255, 0)
 
+    object_image = utils.get_object_image(image, mask)
+
+    if prompt == "":
+        prompt = utils.generate_image_caption(
+            blip_model, blip_proccessor, object_image, device
+        )
+
+    print(prompt)
+
     image_filled = utils.fill_img(image, mask, expand_direction, expand_pixels)
     if prompt == "":
         prompt = utils.generate_image_caption(
