@@ -1,7 +1,7 @@
 import numpy as np
 import cv2
 from ultralytics import YOLO
-
+import gradio as gr
 model = YOLO('yolo11x-seg.pt')
 
 # Define allowed classes
