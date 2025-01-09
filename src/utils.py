@@ -4,7 +4,7 @@ import torch
 
 from diffusers import (
     StableDiffusionControlNetInpaintPipeline,
-    StableDiffusionInpaintPipeline
+    StableDiffusionInpaintPipeline,
     AutoencoderKL,
     UNet2DConditionModel,
     ControlNetModel,
