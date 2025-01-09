@@ -74,7 +74,6 @@ def process_image_mask(
     denoise_strength,
     sampler,
 ):
-    image = img_upload
     expand_pixels = int(expand_pixels)
     image = img_with_mask["background"]
     unet_input_shape = [512, 512]
@@ -100,7 +99,7 @@ def process_image_mask(
 
     image_filled = utils.fill_img(image, mask, expand_direction, expand_pixels)
     caption = utils.generate_image_caption(
-        blip_model, blip_proccessor, image_filled, device
+        blip_model, blip_proccessor, image_filled,mask, device
     )
     image_filled = utils.resize(image_filled, unet_input_shape)
 

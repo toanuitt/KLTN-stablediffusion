@@ -211,15 +211,19 @@ def restore_from_mask(
     return images
 
 
-def generate_image_caption(model, processor, image, device):
-    inputs = processor(image, return_tensors="pt").to(device)
+def generate_image_caption(model, processor, image, mask, device):
+    # Extract masked region
+    masked_image = image.copy()
+    masked_image[mask == 0] = 0  # Zero out non-masked regions
+    
+    # Process masked region
+    inputs = processor(masked_image, return_tensors="pt").to(device)
     outputs = model.generate(
         **inputs,
         max_new_tokens=512,
     )
     caption = processor.decode(outputs[0], skip_special_tokens=True)
     return caption
-
 
 def get_sd_pipeline(model_id, seed):
     torch.cuda.empty_cache()
