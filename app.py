@@ -118,6 +118,7 @@ def process_image_mask(
     cv2.imwrite("img_filled.png", image_filled)
     cv2.imwrite("object_image.png", object_image.astype(np.uint8))
 
+    object_image = utils.resize(object_image, unet_input_shape)
     if opts["sd"]["ip_adapter_id"] is None:
         object_images = []
     else:
