@@ -203,21 +203,22 @@ def restore_from_mask(
     init_images = (
         torch.as_tensor(np.array(init_images, dtype=np.float16))
         .half()
-        .permute(0, 3, 1, 2)
+        .permute(2, 0, 1)
         .cuda()
     )
     mask_images = (
         torch.as_tensor(np.array(mask_images, dtype=np.float16))
         .half()
-        .permute(0, 3, 1, 2)
+        .permute(2, 0, 1)
         .cuda()
     )
-    object_images = (
-        torch.as_tensor(np.array(object_images, dtype=np.float16))
-        .half()
-        .permute(0, 3, 1, 2)
-        .cuda()
-    )
+    if len(object_images) > 0:
+        object_images = (
+            torch.as_tensor(np.array(object_images, dtype=np.float16))
+            .half()
+            .permute(2, 0, 1)
+            .cuda()
+        )
 
     with torch.inference_mode():
         if len(object_images) == 0:
