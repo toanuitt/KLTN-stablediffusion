@@ -115,7 +115,7 @@ def get_object_focus_image(image, mask):
     object_image = get_object_image(image, mask)
     mask_h, mask_w = mask.shape[:2]
 
-    binary_mask = mask[mask == 255].copy()
+    binary_mask = np.where(mask == 255, True, False)
     start_w, end_w = -1, -1
     for row in range(mask_w):
         if np.any(binary_mask[:, row]) and start_w == -1:
