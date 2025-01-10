@@ -1,0 +1,17 @@
+model:
+  name: 'yolo11x-seg'
+  weights: 'yolo11x-seg.pt'
+  confidence: 0.25
+  iou: 0.45
+
+classes:
+  allowed:
+    - apple
+    - bird
+    - dog
+    - cat
+    - car
+    - airplane 
+    - giraffe
+    - sheep
+    - train

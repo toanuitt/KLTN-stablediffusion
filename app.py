@@ -24,6 +24,7 @@ def get_args():
         "--sd-pipeline-config", type=str, default="configs/sd_pipeline.yaml"
     )
     parser.add_argument("--blip-config", type=str, default="configs/blip.yaml")
+    parser.add_argument("--yolo-model", type=str, default="configs/yolo11.yaml")
     parser.add_argument("--device", type=str, default="cpu")
     args = parser.parse_args()
     return args
@@ -47,10 +48,16 @@ def init_models(args):
     with open(args.blip_config) as blip_file:
         blip_opts = yaml.safe_load(blip_file)
 
+    with open(args.yolo_model) as yolo_file:
+        yolo_opts = yaml.safe_load(yolo_file)
+    
+    initialize_yolo(yolo_opts)
+
     opts = dict()
     opts["pix2pix"] = pix2pix_opts
     opts["sd"] = sd_pipeline_opts
     opts["blip"] = blip_opts
+    opts["yolo"] = yolo_opts
 
     if args.device == "cpu":
         opts["device"] = args.device
