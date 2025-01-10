@@ -240,7 +240,7 @@ def restore_from_mask(
                 eta=1.0,
                 image=init_images,
                 mask_image=mask_images,
-                control_image=object_images,
+                control_image=init_images,
                 ip_adapter_image=ip_image,
                 output_type="np",
             ).images
