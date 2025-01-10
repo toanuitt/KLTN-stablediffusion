@@ -220,7 +220,7 @@ def restore_from_mask(
     with torch.inference_mode():
         if isinstance(pipe, StableDiffusionInpaintPipeline):
             outputs = pipe(
-                prompt="",
+                prompt=prompts,
                 negative_prompt=negative_prompts,
                 image=init_images,
                 mask_image=mask_images,
