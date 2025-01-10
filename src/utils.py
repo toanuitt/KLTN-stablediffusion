@@ -151,8 +151,9 @@ def restore_from_mask(
     pipe,
     init_images,
     mask_images,
-    prompts=[],
-    negative_prompts=[],
+    torch_generator,
+    prompts=[""],
+    negative_prompts=[""],
     object_images=[],
     num_inference_steps=30,
     guidance_scale=7.5,
@@ -234,17 +235,31 @@ def restore_from_mask(
             outputs = pipe(
                 prompt=prompts,
                 negative_prompt=negative_prompts,
+                num_inference_steps=num_inference_steps,
+                generator=torch_generator,
+                eta=1.0,
                 image=init_images,
                 mask_image=mask_images,
                 control_image=object_images,
                 ip_adapter_image=ip_image,
-                controlnet_conditioning_scale=0.9,
-                control_guidance_end=0.9,
-                guidance_scale=guidance_scale,
-                num_inference_steps=num_inference_steps,
                 output_type="np",
-                strength=denoise_strength,
             ).images
+
+            # outputs = pipe(
+            #     prompt=prompts,
+            #     negative_prompt=negative_prompts,
+            #     image=init_images,
+            #     mask_image=mask_images,
+            #     control_image=object_images,
+            #     ip_adapter_image=ip_image,
+            #     controlnet_conditioning_scale=0.9,
+            #     control_guidance_end=0.9,
+            #     guidance_scale=guidance_scale,
+            #     num_inference_steps=num_inference_steps,
+            #     output_type="np",
+            #     strength=denoise_strength,
+            # ).images
+
     torch.cuda.empty_cache()
 
     images = []
@@ -288,16 +303,15 @@ def get_sd_pipeline(pipeline_opts):
 
     if pipeline_opts["controlnet_id"] is not None:
         controlnet = ControlNetModel.from_pretrained(
-            pipeline_opts["controlnet_id"],
-            torch_dtype=torch.float16,
+            pipeline_opts["controlnet_id"], torch_dtype=torch.float16
         )
 
         pipe = StableDiffusionControlNetInpaintPipeline.from_pretrained(
             model_id,
-            vae=vae,
-            text_encoder=text_encoder,
-            tokenizer=tokenizer,
-            unet=unet,
+            # vae=vae,
+            # text_encoder=text_encoder,
+            # tokenizer=tokenizer,
+            # unet=unet,
             controlnet=controlnet,
             torch_dtype=torch.float16,
             safety_checker=None,
