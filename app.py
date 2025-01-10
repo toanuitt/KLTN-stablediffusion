@@ -80,7 +80,7 @@ def process_image_mask(
 ):
     global opts, pix2pix_model, pipeline, blip_model, blip_proccessor
 
-    torch_generator = utils.get_torch_generator(opts["seed"])
+    torch_generator = utils.get_torch_generator(opts["sd"]["seed"])
 
     expand_pixels = int(expand_pixels)
     image = img_with_mask["background"]
