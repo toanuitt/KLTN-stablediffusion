@@ -80,6 +80,8 @@ def process_image_mask(
 ):
     global opts, pix2pix_model, pipeline, blip_model, blip_proccessor
 
+    torch_generator = utils.get_torch_generator(opts["seed"])
+
     expand_pixels = int(expand_pixels)
     image = img_with_mask["background"]
     unet_input_shape = [512, 512]
@@ -131,6 +133,7 @@ def process_image_mask(
     negative_prompt = negative_prompt + opts["blip"]["default_negative_prompt"]
     result_image = utils.restore_from_mask(
         pipe=pipeline,
+        torch_generator=torch_generator,
         init_images=[image_filled],
         mask_images=[expand_mask],
         prompts=[prompt],

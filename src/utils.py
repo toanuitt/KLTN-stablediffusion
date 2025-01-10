@@ -149,9 +149,9 @@ def get_object_focus_image(image, mask):
 
 def restore_from_mask(
     pipe,
+    torch_generator,
     init_images,
     mask_images,
-    torch_generator,
     prompts=[""],
     negative_prompts=[""],
     object_images=[],
@@ -346,3 +346,7 @@ def get_blip(model_id):
     processor = BlipProcessor.from_pretrained(model_id)
 
     return model, processor
+
+
+def get_torch_generator(seed):
+    return torch.Generator(device="cpu").manual_seed(seed)
