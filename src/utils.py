@@ -192,7 +192,7 @@ def restore_from_mask(
         from diffusers import PNDMScheduler
 
         pipe.scheduler = PNDMScheduler.from_config(pipe.scheduler.config)
-    elif sampler == "DPM":
+    elif sampler == "dpm":
         from diffusers import DPMSolverMultistepScheduler
 
         pipe.scheduler = DPMSolverMultistepScheduler.from_config(
@@ -224,6 +224,7 @@ def restore_from_mask(
                 prompt=prompts,
                 negative_prompt=negative_prompts,
                 image=init_images,
+                generator=torch_generator,
                 mask_image=mask_images,
                 ip_adapter_image=ip_image,
                 guidance_scale=guidance_scale,

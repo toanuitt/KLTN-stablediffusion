@@ -26,6 +26,7 @@ def get_args():
     parser.add_argument("--blip-config", type=str, default="configs/blip.yaml")
     parser.add_argument("--yolo-model", type=str, default="configs/yolo11.yaml")
     parser.add_argument("--device", type=str, default="cpu")
+    parser.add_argument("--seed", type=int, default=69)
     args = parser.parse_args()
     return args
 
@@ -58,6 +59,7 @@ def init_models(args):
     opts["sd"] = sd_pipeline_opts
     opts["blip"] = blip_opts
     opts["yolo"] = yolo_opts
+    opts["seed"] = args.seed
 
     if args.device == "cpu":
         opts["device"] = args.device
@@ -71,7 +73,16 @@ def init_models(args):
     pipeline.to(opts["device"])
     blip_model.to(opts["device"])
 
-    return opts, pix2pix_model, pipeline, blip_model, blip_proccessor
+    torch_generator = utils.get_torch_generator(opts["seed"])
+
+    return (
+        opts,
+        torch_generator,
+        pix2pix_model,
+        pipeline,
+        blip_model,
+        blip_proccessor,
+    )
 
 
 def process_image_mask(
@@ -85,9 +96,7 @@ def process_image_mask(
     denoise_strength,
     sampler,
 ):
-    global opts, pix2pix_model, pipeline, blip_model, blip_proccessor
-
-    torch_generator = utils.get_torch_generator(opts["sd"]["seed"])
+    global opts, torch_generator, pix2pix_model, pipeline, blip_model, blip_proccessor
 
     expand_pixels = int(expand_pixels)
     image = img_with_mask["background"]
@@ -169,9 +178,7 @@ def process_image_yolo(
     denoise_strength,
     sampler,
 ):
-    global opts, pix2pix_model, pipeline, blip_model, blip_proccessor
-
-    torch_generator = utils.get_torch_generator(opts["sd"]["seed"])
+    global opts, torch_generator, pix2pix_model, pipeline, blip_model, blip_proccessor
 
     expand_pixels = int(expand_pixels)
     image = img_upload
@@ -302,6 +309,7 @@ with gr.Blocks() as demo:
         inputs=[img_upload, class_dropdown],
         outputs=[mask_output, masked_region],
     )
+
     submit_inpaint.click(
         fn=process_image_mask,
         inputs=[
@@ -322,7 +330,12 @@ with gr.Blocks() as demo:
 
 if __name__ == "__main__":
     args = get_args()
-    opts, pix2pix_model, pipeline, blip_model, blip_proccessor = init_models(
-        args
-    )
+    (
+        opts,
+        torch_generator,
+        pix2pix_model,
+        pipeline,
+        blip_model,
+        blip_proccessor,
+    ) = init_models(args)
     demo.launch(share=True)
