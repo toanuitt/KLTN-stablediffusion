@@ -352,7 +352,7 @@ def get_sd_pipeline(pipeline_opts):
             image_encoder_folder="models/image_encoder",
             torch_dtype=torch.float16,
         )
-        pipe.set_ip_adapter_scale(0.5)
+        pipe.set_ip_adapter_scale(pipeline_opts["ip_adapter_scale"])
 
     return pipe
 
