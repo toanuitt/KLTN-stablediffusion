@@ -7,6 +7,7 @@ import gradio as gr
 model = None 
 ALLOWED_CLASSES = None
 config = None  # Will be set from app.py
+stored_masks_dict = {}  # Dictionary to store masks per image
 
 def initialize_yolo(yolo_opts):
     global model, ALLOWED_CLASSES, config
@@ -67,13 +68,15 @@ def create_mask_for_class(image, masks, selected_class_idx):
         return mask_image
     return None
 
+def get_image_hash(image):
+    # Create a hash of the image for unique identification
+    return hash(image.tobytes())
 
 def detect_objects(image):
-    global stored_masks
-    if image is None:
-        return gr.Dropdown(choices=None, value=None)
+    global stored_masks_dict
+    image_hash = get_image_hash(image)
     classes, masks = get_segmentation_masks(image)
-    stored_masks = masks
+    stored_masks_dict[image_hash] = masks
     return gr.Dropdown(choices=classes)
 
 def apply_mask_to_image(image, mask):
@@ -84,9 +87,13 @@ def apply_mask_to_image(image, mask):
     # Copy only the masked region from original image
     masked_image[mask > 127] = image[mask > 127]
     return masked_image
+
 def update_mask(image, selected_class_idx):
-    if selected_class_idx is None:
+    if selected_class_idx is None or image is None:
         return None, None
-    mask = create_mask_for_class(image, stored_masks, selected_class_idx)
+    image_hash = get_image_hash(image)
+    if image_hash not in stored_masks_dict:
+        return None, None
+    mask = create_mask_for_class(image, stored_masks_dict[image_hash], selected_class_idx)
     masked_region = apply_mask_to_image(image, mask)
     return mask, masked_region
