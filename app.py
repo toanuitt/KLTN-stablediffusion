@@ -145,7 +145,7 @@ def process_image_mask(
     image_filled = utils.resize(image_filled, unet_input_shape)
     image_filled = image_filled.astype(np.float16) / 255.0
 
-    # prompt = ""
+    prompt = ""
     negative_prompt = negative_prompt + opts["blip"]["default_negative_prompt"]
     result_image = utils.restore_from_mask(
         pipe=pipeline,
@@ -227,7 +227,7 @@ def process_image_yolo(
     image_filled = utils.resize(image_filled, unet_input_shape)
     image_filled = image_filled.astype(np.float16) / 255.0
 
-    # prompt = ""
+    prompt = ""
     negative_prompt = negative_prompt + opts["blip"]["default_negative_prompt"]
     result_image = utils.restore_from_mask(
         pipe=pipeline,

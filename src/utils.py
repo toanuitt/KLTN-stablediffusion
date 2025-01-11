@@ -162,6 +162,7 @@ def restore_from_mask(
 ):
     torch.cuda.empty_cache()
 
+    sampler = sampler.lower()
     if sampler == "euler":
         from diffusers import EulerDiscreteScheduler
 
@@ -346,5 +347,5 @@ def get_blip(model_id):
     return model, processor
 
 
-def get_torch_generator(seed):
-    return torch.Generator(device="cpu").manual_seed(seed)
+def get_torch_generator(seed, device="cpu"):
+    return torch.Generator(device=device).manual_seed(seed)
