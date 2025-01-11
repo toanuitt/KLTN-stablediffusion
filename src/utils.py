@@ -284,9 +284,6 @@ def generate_image_caption(model, processor, image, device):
 
 def get_sd_pipeline(pipeline_opts):
     torch.cuda.empty_cache()
-    seed = pipeline_opts["seed"]
-    if seed is not None:
-        torch.manual_seed(seed)
 
     model_id = pipeline_opts["model_id"]
     vae = AutoencoderKL.from_pretrained(
