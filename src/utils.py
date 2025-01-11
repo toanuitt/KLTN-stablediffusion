@@ -150,6 +150,7 @@ def get_object_focus_image(image, mask):
 
 def perform_outpaint(
     pipe,
+    pipe_ver,
     torch_generator,
     init_images,
     mask_images,
@@ -221,6 +222,17 @@ def perform_outpaint(
         )
 
     with torch.inference_mode():
+        if pipe_ver == 2:
+            outputs = pipe(
+                image=init_images,
+                mask_image=mask_images,
+                prompt=prompts,
+                negative_prompt=negative_prompts,
+                guidance_scale=guidance_scale,
+                num_inference_steps=num_inference_steps,
+                output_type="np",
+                strength=denoise_strength,
+            ).images[0]
         if isinstance(pipe, StableDiffusionInpaintPipeline):
             outputs = pipe(
                 prompt=prompts,

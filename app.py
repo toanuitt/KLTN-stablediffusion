@@ -177,23 +177,6 @@ with gr.Blocks() as demo:
     with gr.Row():
         with gr.Column():
             with gr.Tabs() as tabs:
-                with gr.Tab("FlexMask Inpaint"):
-                    img_with_mask = gr.ImageEditor(
-                        label="Upload image",
-                        sources=["upload"],
-                        type="numpy",
-                        image_mode="RGB",
-                        brush=gr.Brush(colors=["#ffffff"], color_mode="fixed"),
-                        eraser=gr.Eraser(),
-                        layers=False,
-                        height=512,
-                        width=1024,
-                        transforms=[],
-                        elem_id="image-editor",
-                    )
-                    inpaint_controls = create_control_elements()
-                    submit_inpaint = gr.Button("Generate (FlexMask)")
-
                 with gr.Tab("YOLODraw Inpaint"):
                     img_upload = gr.Image(
                         label="Upload image",
@@ -213,6 +196,24 @@ with gr.Blocks() as demo:
                     )
                     upload_controls = create_control_elements()
                     submit_upload = gr.Button("Generate (YOLODraw)")
+
+                with gr.Tab("FlexMask Inpaint"):
+                    img_with_mask = gr.ImageEditor(
+                        label="Upload image",
+                        sources=["upload"],
+                        type="numpy",
+                        image_mode="RGB",
+                        brush=gr.Brush(colors=["#ffffff"], color_mode="fixed"),
+                        eraser=gr.Eraser(),
+                        layers=False,
+                        height=512,
+                        width=1024,
+                        transforms=[],
+                        elem_id="image-editor",
+                    )
+                    inpaint_controls = create_control_elements()
+                    submit_inpaint = gr.Button("Generate (FlexMask)")
+
         with gr.Column():
             output = gr.Image(label="Result")
     detect_btn.click(
