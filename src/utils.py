@@ -234,18 +234,31 @@ def perform_outpaint(
                 strength=denoise_strength,
             ).images
         elif isinstance(pipe, StableDiffusionInpaintPipeline):
-            outputs = pipe(
-                prompt=prompts,
-                negative_prompt=negative_prompts,
-                image=init_images,
-                generator=torch_generator,
-                mask_image=mask_images,
-                ip_adapter_image=ip_image,
-                guidance_scale=guidance_scale,
-                num_inference_steps=num_inference_steps,
-                output_type="np",
-                strength=denoise_strength,
-            ).images
+            if len(object_images) > 0:
+                outputs = pipe(
+                    prompt=prompts,
+                    negative_prompt=negative_prompts,
+                    image=init_images,
+                    generator=torch_generator,
+                    mask_image=mask_images,
+                    ip_adapter_image=object_images,
+                    guidance_scale=guidance_scale,
+                    num_inference_steps=num_inference_steps,
+                    output_type="np",
+                    strength=denoise_strength,
+                ).images
+            else:
+                outputs = pipe(
+                    prompt=prompts,
+                    negative_prompt=negative_prompts,
+                    image=init_images,
+                    generator=torch_generator,
+                    mask_image=mask_images,
+                    guidance_scale=guidance_scale,
+                    num_inference_steps=num_inference_steps,
+                    output_type="np",
+                    strength=denoise_strength,
+                ).images
         elif isinstance(pipe, StableDiffusionControlNetInpaintPipeline):
             outputs = pipe(
                 prompt=prompts,
