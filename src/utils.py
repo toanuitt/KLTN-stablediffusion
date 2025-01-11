@@ -317,9 +317,7 @@ def get_sd_pipeline(pipeline_opts):
         pipe = StableDiffusionInpaintPipeline.from_singlefile(
             pipeline_opts["model_safetensor_path"]
         )
-        return pipe
-
-    if pipeline_opts["controlnet_id"] is not None:
+    elif pipeline_opts["controlnet_id"] is not None:
         controlnet = ControlNetModel.from_pretrained(
             pipeline_opts["controlnet_id"], torch_dtype=torch.float16
         )
