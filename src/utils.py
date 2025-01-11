@@ -331,10 +331,10 @@ def get_sd_pipeline(pipeline_opts):
     else:
         pipe = StableDiffusionInpaintPipeline.from_pretrained(
             model_id,
-            vae=vae,
-            text_encoder=text_encoder,
-            tokenizer=tokenizer,
-            unet=unet,
+            # vae=vae,
+            # text_encoder=text_encoder,
+            # tokenizer=tokenizer,
+            # unet=unet,
             torch_dtype=torch.float16,
             safety_checker=None,
         )
