@@ -340,7 +340,7 @@ def get_sd_pipeline(pipeline_opts):
         )
 
     ip_adapter_id = pipeline_opts["ip_adapter_id"]
-    if ip_adapter_id is not None:
+    if ip_adapter_id is not None and pipeline_opts["model_ver"] == 1.5:
         pipe.load_ip_adapter(
             "h94/IP-Adapter",
             subfolder="models",
