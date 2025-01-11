@@ -232,7 +232,7 @@ def perform_outpaint(
                 num_inference_steps=num_inference_steps,
                 output_type="np",
                 strength=denoise_strength,
-            ).images[0]
+            ).images
         if isinstance(pipe, StableDiffusionInpaintPipeline):
             outputs = pipe(
                 prompt=prompts,
