@@ -143,6 +143,7 @@ def get_object_focus_image(image, mask):
             end_h = col
             break
 
+    print(f"{start_h=}, {end_h=}, {start_w=}, {end_w=}")
     object_image = object_image[start_h:end_h, start_w:end_w].copy()
     return object_image
 
@@ -431,4 +432,4 @@ def restore_object(
     result_image = resize(result_image, [final_h, final_w])
     cv2.imwrite("result.png", result_image)
 
-    return cv2.cvtColor(result_image, cv2.IMREAD_COLOR_BGR2RGB)
+    return cv2.cvtColor(result_image, cv2.COLOR_BGR2RGB)

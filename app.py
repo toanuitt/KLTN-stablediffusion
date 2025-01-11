@@ -141,8 +141,6 @@ def process_image_yolo(
     image = img_upload
     mask = cv2.cvtColor(mask, cv2.COLOR_BGR2GRAY)
 
-    cv2.imwrite("yolo_mask.png", mask)
-
     result_image = utils.restore_object(
         image=image,
         mask=mask,
