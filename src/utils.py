@@ -147,7 +147,7 @@ def get_object_focus_image(image, mask):
     return object_image
 
 
-def restore_from_mask(
+def perform_outpaint(
     pipe,
     torch_generator,
     init_images,
@@ -349,3 +349,86 @@ def get_blip(model_id):
 
 def get_torch_generator(seed, device="cpu"):
     return torch.Generator(device=device).manual_seed(seed)
+
+
+def restore_object(
+    image,
+    mask,
+    expand_direction,
+    expand_pixels,
+    prompt,
+    negative_prompt,
+    num_inference_steps,
+    guidance_scale,
+    denoise_strength,
+    sampler,
+    opts,
+    torch_generator,
+    pix2pix_model,
+    pipeline,
+    blip_model,
+    blip_proccessor,
+):
+    unet_input_shape = [512, 512]
+    expand_mask = get_expand_mask(mask, expand_direction, expand_pixels)
+
+    final_h, final_w = expand_mask.shape[:2]
+    expand_region = get_expand_region(
+        image.shape[:2], expand_direction, expand_pixels
+    )
+    final_h, final_w = expand_mask.shape[:2]
+    data = get_input(expand_mask, expand_region, [256, 256])
+    expand_sdf_map = pix2pix_model.predict(data)
+
+    complete_mask = get_binary_mask(expand_sdf_map)
+    complete_mask = resize(complete_mask, [final_h, final_w])
+    _, complete_mask = cv2.threshold(complete_mask, 128, 255, 0)
+
+    expand_mask = np.where(expand_region == 255, complete_mask, 0)
+    expand_mask = resize(expand_mask, unet_input_shape)
+    _, expand_mask = cv2.threshold(expand_mask, 128, 255, 0)
+
+    object_image = get_object_focus_image(image, mask)
+    if prompt == "":
+        prompt = generate_image_caption(
+            blip_model, blip_proccessor, object_image, opts["device"]
+        )
+
+    print(prompt)
+
+    image_filled = fill_img(image, mask, expand_direction, expand_pixels)
+
+    cv2.imwrite("expand_region.png", expand_region)
+    cv2.imwrite("expand_mask.png", expand_mask)
+    cv2.imwrite("img_filled.png", image_filled)
+    cv2.imwrite("object_image.png", object_image.astype(np.uint8))
+
+    object_image = resize(object_image, unet_input_shape)
+    if opts["sd"]["ip_adapter_id"] is None:
+        object_images = []
+    else:
+        object_images = [object_image]
+
+    image_filled = resize(image_filled, unet_input_shape)
+    image_filled = image_filled.astype(np.float16) / 255.0
+
+    prompt = ""
+    negative_prompt = negative_prompt + opts["blip"]["default_negative_prompt"]
+    result_image = perform_outpaint(
+        pipe=pipeline,
+        torch_generator=torch_generator,
+        init_images=[image_filled],
+        mask_images=[expand_mask],
+        prompts=[prompt],
+        negative_prompts=[negative_prompt],
+        object_images=object_images,
+        sampler=sampler,
+        num_inference_steps=num_inference_steps,
+        denoise_strength=denoise_strength,
+        guidance_scale=guidance_scale,
+    )[0]
+
+    result_image = resize(result_image, [final_h, final_w])
+    cv2.imwrite("result.png", result_image)
+
+    return cv2.cvtColor(result_image, cv2.IMREAD_COLOR_BGR2RGB)
