@@ -1,4 +1,5 @@
 model_id: "your_huggingface_model_id"
+model_safetensor_path: "your_model_safetensor_path"
 model_ver: 2
 controlnet_id: "your_controlnet_id"
 ip_adapter_id: "your_ip_adapter_id"
