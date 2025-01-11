@@ -429,6 +429,7 @@ def restore_object(
     negative_prompt = negative_prompt + opts["blip"]["default_negative_prompt"]
     result_image = perform_outpaint(
         pipe=pipeline,
+        pipe_ver=opts["sd"]["ver"],
         torch_generator=torch_generator,
         init_images=[image_filled],
         mask_images=[expand_mask],
