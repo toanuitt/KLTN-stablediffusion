@@ -413,7 +413,7 @@ def restore_object(
     image_filled = resize(image_filled, unet_input_shape)
     image_filled = image_filled.astype(np.float16) / 255.0
 
-    prompt = ""
+    # prompt = ""
     negative_prompt = negative_prompt + opts["blip"]["default_negative_prompt"]
     result_image = perform_outpaint(
         pipe=pipeline,
