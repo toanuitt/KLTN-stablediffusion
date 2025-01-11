@@ -233,7 +233,7 @@ def perform_outpaint(
                 output_type="np",
                 strength=denoise_strength,
             ).images
-        if isinstance(pipe, StableDiffusionInpaintPipeline):
+        elif isinstance(pipe, StableDiffusionInpaintPipeline):
             outputs = pipe(
                 prompt=prompts,
                 negative_prompt=negative_prompts,
