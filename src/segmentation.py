@@ -101,5 +101,5 @@ def update_mask(image, selected_class_idx):
 def clear_state(dropdown):
     global stored_masks
     stored_masks = []
-    print(dropdown.value)
+    print(dropdown)
     return gr.Dropdown(choices=[])
