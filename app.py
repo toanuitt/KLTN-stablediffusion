@@ -11,9 +11,22 @@ from src.segmentation import *
 from src.button import create_control_elements
 
 
-opts = torch_generator = pix2pix_model = blip_model = blip_proccessor = (
-    pipeline
-) = None
+opts = dict()
+torch_generator = None
+pix2pix_model = None
+blip_model = None
+blip_proccessor = None
+pipeline = None
+
+stored_masks = []
+
+css = """
+#image-editor {
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+}
+"""
 
 
 def get_args():
@@ -54,7 +67,6 @@ def init_models(args):
     with open(args.yolo_model) as yolo_file:
         yolo_opts = yaml.safe_load(yolo_file)
 
-    opts = dict()
     opts["pix2pix"] = pix2pix_opts
     opts["sd"] = sd_pipeline_opts
     opts["blip"] = blip_opts
@@ -155,16 +167,6 @@ def process_image_yolo(
 
     return result_image
 
-
-stored_masks = []
-
-css = """
-#image-editor {
-    display: block;
-    margin-left: auto;
-    margin-right: auto;
-}
-"""
 
 if __name__ == "__main__":
     args = get_args()
