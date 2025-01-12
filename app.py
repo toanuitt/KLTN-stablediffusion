@@ -171,83 +171,87 @@ if __name__ == "__main__":
     init_models(args)
 
     with gr.Blocks() as demo:
-    gr.Markdown("# Stable Diffusion Inpainting Demo")
-    with gr.Row():
-        with gr.Column():
-            with gr.Tabs() as tabs:
-                with gr.Tab("YOLODraw Inpaint"):
-                    img_upload = gr.Image(
-                        label="Upload image",
-                        sources=["upload"],
-                        type="numpy",
-                        image_mode="RGB",
-                    )
-                    detect_btn = gr.Button("Detect Objects")
-                    class_dropdown = gr.Dropdown(
-                        label="Select object", choices=[], type="index"
-                    )
-                    temp_class_dropdown = gr.Dropdown()
-                    mask_output = gr.Image(
-                        label="Masked Image", type="numpy", image_mode="RGB"
-                    )
-                    masked_region = gr.Image(
-                        label="Masked Region", type="numpy", image_mode="RGB"
-                    )
-                    upload_controls = create_control_elements()
-                    submit_upload = gr.Button("Generate (YOLODraw)")
+        gr.Markdown("# Stable Diffusion Inpainting Demo")
+        with gr.Row():
+            with gr.Column():
+                with gr.Tabs() as tabs:
+                    with gr.Tab("YOLODraw Inpaint"):
+                        img_upload = gr.Image(
+                            label="Upload image",
+                            sources=["upload"],
+                            type="numpy",
+                            image_mode="RGB",
+                        )
+                        detect_btn = gr.Button("Detect Objects")
+                        class_dropdown = gr.Dropdown(
+                            label="Select object", choices=[], type="index"
+                        )
+                        temp_class_dropdown = gr.Dropdown()
+                        mask_output = gr.Image(
+                            label="Masked Image", type="numpy", image_mode="RGB"
+                        )
+                        masked_region = gr.Image(
+                            label="Masked Region",
+                            type="numpy",
+                            image_mode="RGB",
+                        )
+                        upload_controls = create_control_elements()
+                        submit_upload = gr.Button("Generate (YOLODraw)")
 
-                with gr.Tab("FlexMask Inpaint"):
-                    img_with_mask = gr.ImageEditor(
-                        label="Upload image",
-                        sources=["upload"],
-                        type="numpy",
-                        image_mode="RGB",
-                        brush=gr.Brush(colors=["#ffffff"], color_mode="fixed"),
-                        eraser=gr.Eraser(),
-                        layers=False,
-                        height=512,
-                        width=1024,
-                        transforms=[],
-                        elem_id="image-editor",
-                    )
-                    inpaint_controls = create_control_elements()
-                    submit_inpaint = gr.Button("Generate (FlexMask)")
+                    with gr.Tab("FlexMask Inpaint"):
+                        img_with_mask = gr.ImageEditor(
+                            label="Upload image",
+                            sources=["upload"],
+                            type="numpy",
+                            image_mode="RGB",
+                            brush=gr.Brush(
+                                colors=["#ffffff"], color_mode="fixed"
+                            ),
+                            eraser=gr.Eraser(),
+                            layers=False,
+                            height=512,
+                            width=1024,
+                            transforms=[],
+                            elem_id="image-editor",
+                        )
+                        inpaint_controls = create_control_elements()
+                        submit_inpaint = gr.Button("Generate (FlexMask)")
 
-        with gr.Column():
-            output = gr.Image(label="Result")
+            with gr.Column():
+                output = gr.Image(label="Result")
 
-    img_upload.clear(
-        fn=clear_state, inputs=[class_dropdown], outputs=[class_dropdown]
-    )
+        img_upload.clear(
+            fn=clear_state, inputs=[class_dropdown], outputs=[class_dropdown]
+        )
 
-    detect_btn.click(
-        fn=detect_objects,
-        inputs=[img_upload, opts["device"]],
-        outputs=[class_dropdown],
-    )
+        detect_btn.click(
+            fn=detect_objects,
+            inputs=[img_upload, opts["device"]],
+            outputs=[class_dropdown],
+        )
 
-    class_dropdown.change(
-        fn=update_mask,
-        inputs=[img_upload, class_dropdown],
-        outputs=[mask_output, masked_region],
-    )
+        class_dropdown.change(
+            fn=update_mask,
+            inputs=[img_upload, class_dropdown],
+            outputs=[mask_output, masked_region],
+        )
 
-    submit_inpaint.click(
-        fn=process_image_mask,
-        inputs=[
-            img_with_mask,
-            *inpaint_controls,
-        ],
-        outputs=output,
-    )
+        submit_inpaint.click(
+            fn=process_image_mask,
+            inputs=[
+                img_with_mask,
+                *inpaint_controls,
+            ],
+            outputs=output,
+        )
 
-    submit_upload.click(
-        fn=process_image_yolo,
-        inputs=[
-            img_upload,
-            mask_output,
-            *upload_controls,
-        ],
-        outputs=output,
-    )
+        submit_upload.click(
+            fn=process_image_yolo,
+            inputs=[
+                img_upload,
+                mask_output,
+                *upload_controls,
+            ],
+            outputs=output,
+        )
     demo.launch(share=True)
