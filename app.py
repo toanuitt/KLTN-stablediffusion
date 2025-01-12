@@ -51,8 +51,6 @@ def init_models(args):
     with open(args.yolo_model) as yolo_file:
         yolo_opts = yaml.safe_load(yolo_file)
 
-    initialize_yolo(yolo_opts)
-
     opts = dict()
     opts["pix2pix"] = pix2pix_opts
     opts["sd"] = sd_pipeline_opts
@@ -65,6 +63,7 @@ def init_models(args):
     else:
         opts["device"] = f"cuda:{args.device}"
 
+    initialize_yolo(yolo_opts)
     pix2pix_model = Pix2PixModel(opts["pix2pix"])
     pipeline = utils.get_sd_pipeline(opts["sd"])
     blip_model, blip_proccessor = utils.get_blip(opts["blip"]["model_id"])
@@ -188,6 +187,7 @@ with gr.Blocks() as demo:
                     class_dropdown = gr.Dropdown(
                         label="Select object", choices=[], type="index"
                     )
+                    temp_class_dropdown = gr.Dropdown()
                     mask_output = gr.Image(
                         label="Masked Image", type="numpy", image_mode="RGB"
                     )
@@ -216,8 +216,15 @@ with gr.Blocks() as demo:
 
         with gr.Column():
             output = gr.Image(label="Result")
+
+    img_upload.clear(
+        fn=clear_state, inputs=[class_dropdown], outputs=[class_dropdown]
+    )
+
     detect_btn.click(
-        fn=detect_objects, inputs=[img_upload], outputs=[class_dropdown]
+        fn=detect_objects,
+        inputs=[img_upload, opts["device"]],
+        outputs=[class_dropdown],
     )
 
     class_dropdown.change(
@@ -234,6 +241,7 @@ with gr.Blocks() as demo:
         ],
         outputs=output,
     )
+
     submit_upload.click(
         fn=process_image_yolo,
         inputs=[
