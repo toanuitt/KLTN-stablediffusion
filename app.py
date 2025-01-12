@@ -11,7 +11,7 @@ from src.segmentation import *
 from src.button import create_control_elements
 
 
-opts = dict()
+opts = None
 torch_generator = None
 pix2pix_model = None
 blip_model = None
@@ -46,7 +46,6 @@ def get_args():
 
 
 def init_models(args):
-    global opts, torch_generator, pix2pix_model, pipeline, blip_model, blip_proccessor
     assert os.path.exists(
         args.pix2pix_config
     ), f"Cannot find {args.pix2pix_config}"
@@ -67,29 +66,36 @@ def init_models(args):
     with open(args.yolo_model) as yolo_file:
         yolo_opts = yaml.safe_load(yolo_file)
 
-    init_opts = dict()
-    init_opts["pix2pix"] = pix2pix_opts
-    init_opts["sd"] = sd_pipeline_opts
-    init_opts["blip"] = blip_opts
-    init_opts["yolo"] = yolo_opts
-    init_opts["seed"] = args.seed
+    opts = dict()
+    opts["pix2pix"] = pix2pix_opts
+    opts["sd"] = sd_pipeline_opts
+    opts["blip"] = blip_opts
+    opts["yolo"] = yolo_opts
+    opts["seed"] = args.seed
 
     if args.device == "cpu":
-        init_opts["device"] = args.device
+        opts["device"] = args.device
     else:
-        init_opts["device"] = f"cuda:{args.device}"
+        opts["device"] = f"cuda:{args.device}"
 
     initialize_yolo(yolo_opts)
-    pix2pix_model = Pix2PixModel(init_opts["pix2pix"])
-    pipeline = utils.get_sd_pipeline(init_opts["sd"])
-    blip_model, blip_proccessor = utils.get_blip(init_opts["blip"]["model_id"])
+    pix2pix_model = Pix2PixModel(opts["pix2pix"])
+    pipeline = utils.get_sd_pipeline(opts["sd"])
+    blip_model, blip_proccessor = utils.get_blip(opts["blip"]["model_id"])
 
-    pipeline.to(init_opts["device"])
-    blip_model.to(init_opts["device"])
+    pipeline.to(opts["device"])
+    blip_model.to(opts["device"])
 
-    torch_generator = utils.get_torch_generator(init_opts["seed"])
+    torch_generator = utils.get_torch_generator(opts["seed"])
 
-    opts = init_opts
+    return (
+        opts,
+        torch_generator,
+        pix2pix_model,
+        pipeline,
+        blip_model,
+        blip_proccessor,
+    )
 
 
 def process_image_mask(
@@ -173,7 +179,14 @@ def process_image_yolo(
 
 if __name__ == "__main__":
     args = get_args()
-    init_models(args)
+    (
+        opts,
+        torch_generator,
+        pix2pix_model,
+        pipeline,
+        blip_model,
+        blip_proccessor,
+    ) = init_models(args)
 
     with gr.Blocks() as demo:
         gr.Markdown("# Stable Diffusion Inpainting Demo")
