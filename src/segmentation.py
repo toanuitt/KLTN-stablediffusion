@@ -2,6 +2,9 @@ import numpy as np
 import cv2
 from ultralytics import YOLO
 import gradio as gr
+import string
+import random
+
 
 # Initialize with None - will be set from app.py
 model = None
@@ -14,6 +17,10 @@ def initialize_yolo(yolo_opts):
     model = YOLO(yolo_opts["model"]["weights"])
     ALLOWED_CLASSES = set(yolo_opts["classes"]["allowed"])
     config = yolo_opts
+
+
+def id_generator(size=6, chars=string.digits):
+    return "".join(random.choice(chars) for _ in range(size))
 
 
 def get_segmentation_masks(image):
@@ -46,7 +53,9 @@ def get_segmentation_masks(image):
                     instance_counts[class_name] += 1
 
                 # Create instance-specific label
-                instance_label = f"id_{instance_counts[class_name]}"
+                instance_label = (
+                    f"id_{instance_counts[class_name]}_{id_generator(6)}"
+                )
 
                 # Convert mask to numpy and resize
                 mask = seg.cpu().numpy()
@@ -101,5 +110,5 @@ def update_mask(image, selected_class_idx):
 def clear_state(dropdown):
     global stored_masks
     stored_masks = []
-    print(dropdown)
+
     return gr.Dropdown(choices=[])
