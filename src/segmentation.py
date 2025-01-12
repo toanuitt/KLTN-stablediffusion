@@ -16,14 +16,13 @@ def initialize_yolo(yolo_opts):
     config = yolo_opts
 
 
-def get_segmentation_masks(image, device="cpu"):
+def get_segmentation_masks(image):
     height, width = image.shape[:2]
     results = model(
         image,
         conf=config["model"]["confidence"],
         iou=config["model"]["iou"],
         stream=True,
-        device=device,
     )
     class_instances = []
     masks = []
@@ -92,14 +91,14 @@ def apply_mask_to_image(image, mask):
 
 
 def update_mask(image, selected_class_idx):
-    if selected_class_idx is None:
+    if selected_class_idx is None or image is None:
         return None, None
     mask = create_mask_for_class(image, stored_masks, selected_class_idx)
     masked_region = apply_mask_to_image(image, mask)
     return mask, masked_region
 
 
-def clear_state(dropdown):
+def clear_state():
     global stored_masks
     stored_masks = []
     return gr.Dropdown(choices=[])
