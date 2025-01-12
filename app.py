@@ -11,7 +11,9 @@ from src.segmentation import *
 from src.button import create_control_elements
 
 
-opts = pix2pix_model = blip_model = blip_proccessor = pipeline = None
+opts = torch_generator = pix2pix_model = blip_model = blip_proccessor = (
+    pipeline
+) = None
 
 
 def get_args():
@@ -31,6 +33,7 @@ def get_args():
 
 
 def init_models(args):
+    global opts, torch_generator, pix2pix_model, pipeline, blip_model, blip_proccessor
     assert os.path.exists(
         args.pix2pix_config
     ), f"Cannot find {args.pix2pix_config}"
@@ -72,15 +75,6 @@ def init_models(args):
     blip_model.to(opts["device"])
 
     torch_generator = utils.get_torch_generator(opts["seed"])
-
-    return (
-        opts,
-        torch_generator,
-        pix2pix_model,
-        pipeline,
-        blip_model,
-        blip_proccessor,
-    )
 
 
 def process_image_mask(
@@ -254,12 +248,5 @@ with gr.Blocks() as demo:
 
 if __name__ == "__main__":
     args = get_args()
-    (
-        opts,
-        torch_generator,
-        pix2pix_model,
-        pipeline,
-        blip_model,
-        blip_proccessor,
-    ) = init_models(args)
+    init_models(args)
     demo.launch(share=True)
