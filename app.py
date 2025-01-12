@@ -226,7 +226,7 @@ if __name__ == "__main__":
 
         detect_btn.click(
             fn=detect_objects,
-            inputs=[img_upload, opts["device"]],
+            inputs=[img_upload],
             outputs=[class_dropdown],
         )
 
@@ -254,4 +254,5 @@ if __name__ == "__main__":
             ],
             outputs=output,
         )
+
     demo.launch(share=True)
