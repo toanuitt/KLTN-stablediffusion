@@ -82,7 +82,7 @@ def init_models(args):
     initialize_yolo(yolo_opts)
     pix2pix_model = Pix2PixModel(init_opts["pix2pix"])
     pipeline = utils.get_sd_pipeline(init_opts["sd"])
-    blip_model, blip_proccessor = utils.get_blip(opts["blip"]["model_id"])
+    blip_model, blip_proccessor = utils.get_blip(init_opts["blip"]["model_id"])
 
     pipeline.to(init_opts["device"])
     blip_model.to(init_opts["device"])
