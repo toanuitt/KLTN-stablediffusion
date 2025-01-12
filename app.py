@@ -165,7 +165,12 @@ css = """
     margin-right: auto;
 }
 """
-with gr.Blocks() as demo:
+
+if __name__ == "__main__":
+    args = get_args()
+    init_models(args)
+
+    with gr.Blocks() as demo:
     gr.Markdown("# Stable Diffusion Inpainting Demo")
     with gr.Row():
         with gr.Column():
@@ -245,8 +250,4 @@ with gr.Blocks() as demo:
         ],
         outputs=output,
     )
-
-if __name__ == "__main__":
-    args = get_args()
-    init_models(args)
     demo.launch(share=True)
