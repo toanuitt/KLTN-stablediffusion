@@ -75,8 +75,8 @@ def create_mask_for_class(image, masks, selected_class_idx):
 
 
 def detect_objects(image):
-    global stored_masks, opts
-    classes, masks = get_segmentation_masks(image, device=opts["device"])
+    global stored_masks
+    classes, masks = get_segmentation_masks(image)
     stored_masks = masks
     return gr.Dropdown(choices=classes)
 
