@@ -98,7 +98,8 @@ def update_mask(image, selected_class_idx):
     return mask, masked_region
 
 
-def clear_state():
+def clear_state(dropdown):
     global stored_masks
     stored_masks = []
+    print(dropdown.value)
     return gr.Dropdown(choices=[])

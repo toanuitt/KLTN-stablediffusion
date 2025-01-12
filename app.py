@@ -204,7 +204,6 @@ if __name__ == "__main__":
                         class_dropdown = gr.Dropdown(
                             label="Select object", choices=[], type="index"
                         )
-                        temp_class_dropdown = gr.Dropdown()
                         mask_output = gr.Image(
                             label="Masked Image", type="numpy", image_mode="RGB"
                         )
@@ -238,7 +237,9 @@ if __name__ == "__main__":
             with gr.Column():
                 output = gr.Image(label="Result")
 
-        img_upload.clear(fn=clear_state, outputs=[class_dropdown])
+        img_upload.clear(
+            fn=clear_state, inputs=[class_dropdown], outputs=[class_dropdown]
+        )
 
         detect_btn.click(
             fn=detect_objects,
