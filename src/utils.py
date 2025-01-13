@@ -214,12 +214,6 @@ def perform_outpaint(
     ).cuda()
     if len(object_images) > 0:
         ip_image = Image.fromarray(object_images[0])
-        object_images = [image / 255.0 for image in object_images]
-        object_images = (
-            torch.as_tensor(np.array(object_images, dtype=np.float16))
-            .permute(0, 3, 1, 2)
-            .cuda()
-        )
 
     with torch.inference_mode():
         if pipe_ver == 2:

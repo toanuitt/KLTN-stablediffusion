@@ -1,7 +1,9 @@
 import gradio as gr
+
+
 def create_control_elements():
     expand_direction = gr.Radio(
-        label="Direction to expand image", 
+        label="Direction to expand image",
         choices=["Left", "Right"],
         value="Left",
     )
@@ -12,10 +14,7 @@ def create_control_elements():
         precision=0,
         value=200,
     )
-    prompt = gr.Textbox(
-        label="Prompt", 
-        placeholder="Enter your prompt here"
-    )
+    prompt = gr.Textbox(label="Prompt", placeholder="Enter your prompt here")
 
     negative_prompt = gr.Textbox(
         label="Negative Prompt",
@@ -25,27 +24,28 @@ def create_control_elements():
     num_inference_steps = gr.Slider(
         minimum=1,
         maximum=100,
-        value=30,
+        value=20,
         step=1,
         label="Number of Inference Steps",
     )
     guidance_scale = gr.Slider(
-        minimum=1.0, 
-        maximum=20.0, 
-        value=7.5, 
-        step=0.5,
-        label="Guidance Scale"
+        minimum=1.0, maximum=20.0, value=7.5, step=0.5, label="Guidance Scale"
     )
     denoise_strength = gr.Slider(
-        minimum=0.0, 
-        maximum=1.0, 
-        value=1.0, 
-        label="Denoise Strength"
+        minimum=0.0, maximum=1.0, value=1.0, label="Denoise Strength"
     )
     sampler = gr.Dropdown(
         choices=["euler", "plms", "ddim"],
         label="Sampler",
         value="euler",
     )
-    return (expand_direction, expand_pixels, prompt, negative_prompt, 
-            num_inference_steps, guidance_scale, denoise_strength, sampler)
+    return (
+        expand_direction,
+        expand_pixels,
+        prompt,
+        negative_prompt,
+        num_inference_steps,
+        guidance_scale,
+        denoise_strength,
+        sampler,
+    )
