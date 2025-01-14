@@ -224,6 +224,7 @@ with gr.Blocks() as demo:
         fn=update_mask,
         inputs=[img_upload, class_dropdown],
         outputs=[mask_output, masked_region],
+        
     )
     submit_inpaint.click(
         fn=process_image_mask,
